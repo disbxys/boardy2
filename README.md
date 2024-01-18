@@ -1,0 +1,25 @@
+# Boardy2
+
+## Dependencies
+```
+Python
+Flask
+Flask-SQLAlchemy
+PyQt6
+PyQt6-WebEngine
+``````
+
+## How to Run
+This program can be run either through a web browser or as a desktop app by running ```main.py```.
+
+To run through web browser, un-comment this line.
+```python
+app.run(host="0.0.0.0", port=PORT)
+```
+
+To run through as a desktop app, un-comment this line.
+```python
+run_gui()
+```
+
+<i>P.S. You should make sure to comment out the other line (i.e. commenting out the second line if running through web browser or vice versa).</i>
