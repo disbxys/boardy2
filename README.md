@@ -1,4 +1,7 @@
 # Boardy2
+Boardy2 uses PyQt to port a flask-based image gallery project to a desktop application.
+
+If you are more comfortable running the project through a web browser, go to [here](#how-to-run) for instructions on doing so
 
 ## Dependencies
 ```
