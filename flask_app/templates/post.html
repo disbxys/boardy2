@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %} Post: {{ image_stats.id }} {% endblock %}
+
+{% block content %}
+<div class="content">
+    <h1>Post</h1>
+
+    <div class="image-container">
+        {% if image_stats.is_video %}
+        <video controls style="max-width: 600px;">
+            <source
+                src="{{ url_for('get_image', id=image_stats.id) }}"
+                type="{{ image_stats.mimetype }}"
+            />
+        </video>
+        {% else %}
+        <img
+            src="{{ url_for('get_image', id=image_stats.id) }}"
+            style="max-width: 600px;"
+            loading="lazy"
+        >
+        {% endif %}
+    </div>
+    <div class="details">
+        <span><strong>ID:</strong> {{ image_stats.id }}</span><br/>
+        <span><strong>Date:</strong> {{ image_stats.date }}</span><br/>
+        <span><strong>File Type:</strong> {{ image_stats.type }}</span><br/>
+        <span>
+            View full image
+            <a href="{{ url_for('get_image', id=image_stats.id) }}">here</a>
+        </span>
+    </div>
+    <div class="delete-button">
+        <button onclick="confirmDelete()">Delete</button>
+    </div>
+</div>
+<script>
+    function confirmDelete() {
+        const confirmation = confirm("Are you sure you want to delete the image?");
+
+        if (confirmation) {
+            window.location.href = `{{ url_for("delete_image", id=image_stats.id) }}`;
+
+            window.alert("Image deleted successfully!");
+        }
+    }
+</script>
+
+{% endblock %}

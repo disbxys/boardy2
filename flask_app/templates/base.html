@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %} {% endblock %}</title>
+        <style>
+            nav li {
+                display: inline;
+                font-size: large;
+                margin: auto;
+            }
+            .no-list {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+            }
+            h1 {
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="content-container">
+            <nav style="text-align: center;">
+                <ul class="no-list">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('upload_file') }}">Upload</a></li>
+                </ul>
+            </nav>
+            <hr>
+            {% block content %} {% endblock %}
+        </div>
+    </body>
+</html>
