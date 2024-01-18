@@ -52,9 +52,7 @@ class FlaskGui(QMainWindow):
         print(self.webview.url().url(), ": load finished")
 
 
-if __name__ == "__main__":
-    from flask_app import app
-
+def run_gui():
     qtapp = QApplication(sys.argv)
 
     flask_gui = FlaskGui(app)
@@ -64,3 +62,11 @@ if __name__ == "__main__":
     flask_gui.show()
 
     sys.exit(qtapp.exec())
+
+
+if __name__ == "__main__":
+    from flask_app import app
+    
+    # app.run(host="0.0.0.0", port=PORT, debug=True)
+
+    run_gui()
