@@ -82,6 +82,7 @@ def upload_file():
                 if file_ext == "":
                     file_ext = file_stem
 
+                # Enforce allowed file upload extensions
                 if file_ext not in app.config["UPLOAD_EXTENSIONS"]:
                     continue
 
@@ -157,15 +158,11 @@ def get_image_stats(id: int) -> dict:
 
     # Get image type
     mtype, _ = mimetypes.guess_type(image_path)
-    is_video = False
-    if mtype and mtype:
-        is_video = mtype.startswith("video")
 
     image_stats = {
         "id": image.id,
         "name": image.filename,
         "date": i_mtime,
-        "is_video": is_video,
         "mimetype": mtype
     }
 
