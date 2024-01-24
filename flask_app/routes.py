@@ -112,6 +112,7 @@ def upload_file():
                         if not chunk:
                             break
                         outfile.write(chunk)
+                app.logger.info(f"New image saved to database: {new_filename}")
 
                 files_saved.append(Image(filename=new_filename))
 
