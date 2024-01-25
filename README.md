@@ -19,6 +19,11 @@ To run through web browser, un-comment this line.
 ```python
 app.run(host="0.0.0.0", port=PORT)
 ```
+By default, the app will be available on the local network. To limit it to your pc, remove the host parameter so it would look like this:
+```python
+app.run(port=PORT)
+```
+<br>
 
 To run through as a desktop app, un-comment this line.
 ```python
