@@ -31,3 +31,10 @@ run_gui()
 ```
 
 <i>P.S. You should make sure to comment out the other line (i.e. commenting out the second line if running through web browser or vice versa).</i>
+
+## Supported Media Formats
+Boardy2 currently only supports a limited number of image formats:
+- jpg & jpeg
+- png
+- gif
+- webp
