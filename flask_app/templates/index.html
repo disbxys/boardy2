@@ -11,7 +11,15 @@
         {% if images.has_prev %}
         <a href="{{ url_for('index', page=images.prev_num) }}">Previous</a>
         {% endif %}
-        Page {{ images.page }} of {{ images.pages }}
+        
+        {% for page_num in images.iter_pages(left_current=2, right_current=2) %}
+            {% if page_num %}
+            <a href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+            ...
+            {% endif %}
+        {% endfor %}
+
         {% if images.has_next %}
         <a href="{{ url_for('index', page=images.next_num) }}">Next</a>
         {% endif %}
@@ -47,7 +55,15 @@
         {% if images.has_prev %}
         <a href="{{ url_for('index', page=images.prev_num) }}">Previous</a>
         {% endif %}
-        Page {{ images.page }} of {{ images.pages }}
+
+        {% for page_num in images.iter_pages(left_current=2, right_current=2) %}
+            {% if page_num %}
+            <a href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+            ...
+            {% endif %}
+        {% endfor %}
+
         {% if images.has_next %}
         <a href="{{ url_for('index', page=images.next_num) }}">Next</a>
         {% endif %}
