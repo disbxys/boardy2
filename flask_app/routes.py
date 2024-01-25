@@ -64,6 +64,13 @@ def get_image_post(id):
     return render_template("post.html", image_stats=image_stats, tags=tags)
 
 
+@app.route("/tags")
+def get_tags():
+    tags = Tag.query.all()
+
+    return {"tags": [tag.name for tag in tags]}
+
+
 @app.route("/upload", methods=["GET", "POST"])
 def upload_file():
     if request.method == "POST":
