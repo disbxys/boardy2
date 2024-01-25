@@ -6,7 +6,7 @@ import os
 from flask import abort, request, redirect, url_for, send_from_directory, render_template
 
 from flask_app import app
-from flask_app.models import db, Image
+from flask_app.models import db, Image, Tag
 
 
 @app.route("/")
@@ -55,8 +55,13 @@ def get_image(id):
 @app.route("/posts/<int:id>")
 def get_image_post(id):
     image_stats = get_image_stats(id)
+    image = Image.query.filter_by(id=image_stats["id"]).first()
 
-    return render_template("post.html", image_stats=image_stats)
+    tags = []
+    if image:
+        tags = image.tags
+
+    return render_template("post.html", image_stats=image_stats, tags=tags)
 
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -71,6 +76,11 @@ def upload_file():
             return redirect(url_for("index"))
 
         with db.session.no_autoflush as db_session:
+
+            # temp: TODO: implement tag function
+            tag = Tag.query.filter_by(name="general_default").first()
+            if not tag:
+                tag = Tag(name="general_default")
 
             files_saved = list()
             for file in files:
@@ -114,7 +124,11 @@ def upload_file():
                         outfile.write(chunk)
                 app.logger.info(f"New image saved to database: {new_filename}")
 
-                files_saved.append(Image(filename=new_filename))
+                ####
+                image = Image(filename=new_filename)
+                image.tags.append(tag)
+
+                files_saved.append(image)
 
             db_session.add_all(files_saved)
             db_session.commit()

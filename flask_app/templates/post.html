@@ -13,6 +13,15 @@
             loading="lazy"
         >
     </div>
+    <div class="tags-container">
+        <strong>Tags:</strong>
+        <ul class="tag-list" style="list-style: disc; margin: 0;">
+            {% for tag in tags %}
+                <li>{{ tag.name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <br/>
     <div class="details">
         <span><strong>ID:</strong> {{ image_stats.id }}</span><br/>
         <span><strong>Date:</strong> {{ image_stats.date }}</span><br/>
