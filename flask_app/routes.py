@@ -185,7 +185,7 @@ def get_image_stats(id: int) -> dict:
         "id": image.id,
         "name": image.filename,
         "date": i_mtime,
-        "mimetype": mtype
+        "mimetype": mtype.split("/")[1].upper() if mtype else "Unknown"
     }
 
     return image_stats

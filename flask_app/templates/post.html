@@ -25,7 +25,7 @@
     <div class="details">
         <span><strong>ID:</strong> {{ image_stats.id }}</span><br/>
         <span><strong>Date:</strong> {{ image_stats.date }}</span><br/>
-        <span><strong>File Type:</strong> {{ image_stats.type }}</span><br/>
+        <span><strong>File Type:</strong> {{ image_stats.mimetype }}</span><br/>
         <span>
             View full image
             <a href="{{ url_for('get_image', id=image_stats.id) }}">here</a>
