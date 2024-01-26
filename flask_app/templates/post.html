@@ -17,7 +17,9 @@
         <strong>Tags:</strong>
         <ul class="tag-list" style="list-style: disc; margin: 0;">
             {% for tag in tags %}
-                <li>{{ tag.name }}</li>
+                <li>
+                    <span>{{ tag[0].name }} ({{ tag[1] }})</span>
+                </li>
             {% endfor %}
         </ul>
     </div>

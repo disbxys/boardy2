@@ -59,9 +59,17 @@ def get_image_post(id):
 
     tags = []
     if image:
-        tags = image.tags
+        tags_for_image = image.tags
 
-    return render_template("post.html", image_stats=image_stats, tags=tags)
+        tag_info_list = []
+
+        for tag in tags_for_image:
+            # Get the number of images associated with each tag
+            num_images = len(tag.images)
+
+            tag_info_list.append((tag, num_images))
+
+    return render_template("post.html", image_stats=image_stats, tags=tag_info_list)
 
 
 @app.route("/tags")
