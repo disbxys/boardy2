@@ -29,7 +29,7 @@
     <div class="images-container">
         <table class="images-table">
             <tbody>
-                {% for image_batch in images | batch(2) %}
+                {% for image_batch in images | batch(8) %}
                     <tr class="images-row">
                         {% for image in image_batch %}
                             <td class="image-cell">
@@ -37,7 +37,7 @@
                                     <a href="{{ url_for('get_image_post', id=image.id) }}">
                                         <img
                                             src="{{ url_for('get_image', id=image.id) }}"
-                                            style="max-width: 450px; max-height: 450px; padding: 5px;"
+                                            style="max-width: 200px; max-height: 200px; padding: 5px;"
                                             loading="lazy"
                                         >
                                     </a>

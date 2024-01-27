@@ -11,7 +11,7 @@ from flask_app.models import db, Image, Tag
 
 @app.route("/")
 def index():
-    rows_per_page = 20
+    rows_per_page = 42
 
     page = request.args.get("page", 1, type=int)
 
