@@ -67,6 +67,6 @@ def run_gui():
 if __name__ == "__main__":
     from flask_app import app
     
-    # app.run(host="0.0.0.0", port=PORT, debug=True)
+    app.run(port=PORT, debug=True)
 
-    run_gui()
+    # run_gui()
