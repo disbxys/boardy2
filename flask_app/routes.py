@@ -81,7 +81,7 @@ def get_tags():
 @app.route("/tags/images")
 def get_images_by_tags():
     tags_string = request.args.get("tags", "")
-    tags = Tag.query.filter(Tag.name.in_(tags_string.split())).all() or abort()
+    tags = Tag.query.filter(Tag.name.in_(tags_string.split())).all()
 
     query = db.session.query(Image)\
         .join(image_tag, image_tag.c.image_id == Image.id)\
