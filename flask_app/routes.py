@@ -15,9 +15,26 @@ def index():
     rows_per_page = 42
 
     page = request.args.get("page", 1, type=int)
+    tags_string = request.args.get("tags", "")
+    
+    tags = Tag.query.filter(Tag.name.in_(tags_string.split())).all()
+    
+    if (tags_string != "") and (len(tags) == 0):
+        # No valid tags where found and the tags arg was not empty
+        query = db.session.query(Image).filter_by(id=None)
+    else:
+        # Create the start of the search query string
+        query = db.session.query(Image)\
+            .join(image_tag, image_tag.c.image_id == Image.id)\
+            .join(Tag, Tag.id == image_tag.c.tag_id)
 
-    images_query = Image.query.order_by(Image.id.desc())
-    images = images_query.paginate(page=page, per_page=rows_per_page)
+        # Add an AND = clause for each tag
+        for tag in tags:
+            query = query.filter(Tag.name == tag.name)
+
+        query = query.order_by(Image.id.desc())
+
+    images = query.paginate(page=page, per_page=rows_per_page)
 
     return render_template("index.html", images=images)
 
@@ -78,20 +95,22 @@ def get_tags():
 
     return {"tags": [tag.name for tag in tags]}
 
-@app.route("/tags/images")
-def get_images_by_tags():
-    tags_string = request.args.get("tags", "")
-    tags = Tag.query.filter(Tag.name.in_(tags_string.split())).all()
+# @app.route("/tags/images")
+# def get_images_by_tags():
+#     tags_string = request.args.get("tags", "")
+#     tags = Tag.query.filter(Tag.name.in_(tags_string.split())).all()
 
-    query = db.session.query(Image)\
-        .join(image_tag, image_tag.c.image_id == Image.id)\
-        .join(Tag, Tag.id == image_tag.c.tag_id)
+#     query = db.session.query(Image)\
+#         .join(image_tag, image_tag.c.image_id == Image.id)\
+#         .join(Tag, Tag.id == image_tag.c.tag_id)
     
-    for tag in tags:
-        query = query.filter(Tag.name.ilike(f"%{tag.name}%"))
+#     if tags:
+#         for tag in tags:
+#             query = query.filter(Tag.name.ilike(f"%{tag.name}%"))
 
-
-    return {"images": [image.filename for image in (query.all() or list())]}
+#         return {"images": [image.filename for image in (query.all() or list())]}
+#     else:
+#         return {"images": []}
 
 
 @app.route("/upload", methods=["GET", "POST"])
