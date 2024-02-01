@@ -2,11 +2,12 @@ from datetime import datetime
 import hashlib
 import mimetypes
 import os
+from typing import List, Optional
 
 from flask import abort, request, redirect, url_for, send_from_directory, render_template
 
 from flask_app import app
-from flask_app.models import db, Image, Tag
+from flask_app.models import db, Image, image_tag, Tag
 
 
 @app.route("/")
@@ -57,7 +58,6 @@ def get_image_post(id):
     image_stats = get_image_stats(id)
     image = Image.query.filter_by(id=image_stats["id"]).first()
 
-    tags = []
     if image:
         tags_for_image = image.tags
 
@@ -77,6 +77,21 @@ def get_tags():
     tags = Tag.query.all()
 
     return {"tags": [tag.name for tag in tags]}
+
+@app.route("/tags/images")
+def get_images_by_tags():
+    tags_string = request.args.get("tags", "")
+    tags = Tag.query.filter(Tag.name.in_(tags_string.split())).all() or abort()
+
+    query = db.session.query(Image)\
+        .join(image_tag, image_tag.c.image_id == Image.id)\
+        .join(Tag, Tag.id == image_tag.c.tag_id)
+    
+    for tag in tags:
+        query = query.filter(Tag.name.ilike(f"%{tag.name}%"))
+
+
+    return {"images": [image.filename for image in (query.all() or list())]}
 
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -197,3 +212,29 @@ def get_image_stats(id: int) -> dict:
     }
 
     return image_stats
+
+
+def search_tags(keyword: str) -> List[Tag]:
+    '''Returns a list of matching tags from querying the keyword.'''
+    # TODO: Add image count for each tag result
+    matching_tags = Tag.query.filter(Tag.name.like(f"%{keyword}%")).all() or list()
+
+
+    return [(tag, len(tag.images)) for tag in matching_tags]
+
+
+def search_exact_tag(keyword: str) -> Tag:
+    '''Returns an exact match for a Tag or none.'''
+    # TODO: Add image count for each tag result
+    return Tag.query.filter_by(name=keyword).first()
+
+
+# def search_images_by_tags(tags: List[Tag]) -> List[Image]:
+#     query = db.session.query(Image)\
+#         .join(image_tag, image_tag.c.image_id == Image.id)\
+#         .join(Tag, Tag.id == image_tag.c.tag_id)
+    
+#     for tag in tags:
+#         query = query.filter(Tag.name.ilike(f"%{tag.name}%"))
+
+#     return query.all() or list()
