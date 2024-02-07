@@ -41,12 +41,15 @@ Boardy2 currently only supports a limited number of image formats:
 - gif
 - webp
 
-## Q & A
+## Q&A
 Q: Will support for more image formats be added?\
 A: Yes
 
 Q: When?\
 A: When I get to it.
+
+Q: Can't you do it this way?\
+A: I probably haven't done it that way either because it would take too much time to do or it would feel too wierd to implment.
 
 Q: Thank you for creating this app.\
 A: Not a question but thank you
