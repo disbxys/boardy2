@@ -21,6 +21,10 @@
                     <span>{{ tag[0].name }} ({{ tag[1] }})</span>
                 </li>
             {% endfor %}
+            <form action="{{ url_for('add_tag_to_image', image_id=image_stats.id) }}" method="post">
+                <input type="text" id="new_tag" name="new_tag" required>
+                <button type="submit">Add Tag</button>
+            </form>
         </ul>
     </div>
     <br/>

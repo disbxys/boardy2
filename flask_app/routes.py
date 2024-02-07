@@ -95,22 +95,33 @@ def get_tags():
 
     return {"tags": [tag.name for tag in tags]}
 
-# @app.route("/tags/images")
-# def get_images_by_tags():
-#     tags_string = request.args.get("tags", "")
-#     tags = Tag.query.filter(Tag.name.in_(tags_string.split())).all()
 
-#     query = db.session.query(Image)\
-#         .join(image_tag, image_tag.c.image_id == Image.id)\
-#         .join(Tag, Tag.id == image_tag.c.tag_id)
+@app.route("/tags/add/<int:image_id>", methods=["POST"])
+def add_tag_to_image(image_id):
+    image = Image.query.get_or_404(image_id)
+
+    new_tag_name = request.form.get("new_tag", "").strip()
+    new_tag_name = new_tag_name.replace(" ", "_")
+
+    if new_tag_name:
+        tag = Tag.query.filter_by(name=new_tag_name).first()
+
+        if not tag:
+            # Add new tag to database
+            tag = Tag(name=new_tag_name)
+            db.session.add(tag)
+
+        if tag not in image.tags:
+            # Add tag to image if not on image already.
+            image.tags.append(tag)
+            app.logger.info(f"New tag <{new_tag_name}> added for image id <{image_id}>.")
+        else:
+            app.logger.warning(f"Tag <{new_tag_name}> already exists for image id <{image_id}>.")
+
+        db.session.commit()
     
-#     if tags:
-#         for tag in tags:
-#             query = query.filter(Tag.name.ilike(f"%{tag.name}%"))
-
-#         return {"images": [image.filename for image in (query.all() or list())]}
-#     else:
-#         return {"images": []}
+    
+    return redirect(url_for("get_image_post", id=image_id))
 
 
 @app.route("/upload", methods=["GET", "POST"])
