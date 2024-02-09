@@ -257,14 +257,3 @@ def search_exact_tag(keyword: str) -> Tag:
     '''Returns an exact match for a Tag or none.'''
     # TODO: Add image count for each tag result
     return Tag.query.filter_by(name=keyword).first()
-
-
-# def search_images_by_tags(tags: List[Tag]) -> List[Image]:
-#     query = db.session.query(Image)\
-#         .join(image_tag, image_tag.c.image_id == Image.id)\
-#         .join(Tag, Tag.id == image_tag.c.tag_id)
-    
-#     for tag in tags:
-#         query = query.filter(Tag.name.ilike(f"%{tag.name}%"))
-
-#     return query.all() or list()
