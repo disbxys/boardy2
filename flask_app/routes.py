@@ -120,7 +120,35 @@ def add_tag_to_image(image_id):
 
         db.session.commit()
     
+    return redirect(url_for("get_image_post", id=image_id))
+
+
+@app.route("/tags/delete")
+def remove_tags():
+    """
+    Take a list of tag ids and either remove them from the image
+    or delete the tag entirely.
+    """
+    image_id = request.args.get("id")
+    delete_ = request.args.get("delete", type=lambda x: x.lower() == "true")
+    tags_string = request.args.get("tags")
+
+    tags_list = [int(tag_id) for tag_id in tags_string.split(",")]
+    tags = db.session.query(Tag)\
+        .filter(Tag.id.in_(tags_list))\
+        .all()
     
+    if delete_:
+        with db.session.no_autoflush as db_session:
+            for tag in tags:
+                db_session.delete(tag)
+    else:
+        image = Image.query.filter_by(id=image_id).first_or_404()
+        if image and len(tags) > 0:
+            image.remove_tags(tags)
+
+    db.session.commit()
+
     return redirect(url_for("get_image_post", id=image_id))
 
 

@@ -1,3 +1,5 @@
+from typing import List
+
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -12,6 +14,14 @@ image_tag = db.Table(
 )
 
 
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"Tag <{self.name}>"
+
+
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), unique=True, nullable=False)
@@ -22,13 +32,10 @@ class Image(db.Model):
     def __repr__(self) -> str:
         return f"Image <{self.filename}>"
 
-
-class Tag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-
-    def __repr__(self) -> str:
-        return f"Tag <{self.name}>"
+    def remove_tags(self, tags_to_remove: List[Tag]) -> None:
+        for tag in tags_to_remove:
+            if tag in self.tags:
+                self.tags.remove(tag)
 
 
 # Call configure on the registry

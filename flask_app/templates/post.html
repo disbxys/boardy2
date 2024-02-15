@@ -15,16 +15,24 @@
     </div>
     <div class="tags-container">
         <strong>Tags:</strong>
-        <ul class="tag-list" style="list-style: disc; margin: 0;">
+        <ul id="tag-list" class="tag-list" style="list-style: disc; margin: 0;">
             {% for tag in tags %}
                 <li>
-                    <span>{{ tag[0].name }} ({{ tag[1] }})</span>
+                    <input type="checkbox" value="{{ tag[0].id }}"><span>
+                        <a href="{{ url_for('index', tags=tag[0].name) }}">
+                            {{ tag[0].name }}
+                        </a>
+                        ({{ tag[1] }})
+                    </span></input>
                 </li>
             {% endfor %}
             <form action="{{ url_for('add_tag_to_image', image_id=image_stats.id) }}" method="post">
                 <input type="text" id="new_tag" name="new_tag" required>
                 <button type="submit">Add Tag</button>
             </form>
+            <div class="delete-button-container" id="delete-button-container" style="display: none;">
+                <button class="delete-button" onclick="confirmDeleteTags()">Remove Tag(s)</button>
+            </div>
         </ul>
     </div>
     <br/>
@@ -37,12 +45,15 @@
             <a href="{{ url_for('get_image', id=image_stats.id) }}">here</a>
         </span>
     </div>
-    <div class="delete-button">
-        <button onclick="confirmDelete()">Delete</button>
+    <div class="delete-button-container" id="delete-button-container">
+        <button class="delete-button" onclick="confirmDeletePost()">Delete</button>
     </div>
 </div>
 <script>
-    function confirmDelete() {
+    const buttonContainer = document.getElementById("delete-button-container");
+    const tagsList = document.getElementById("tag-list");
+
+    function confirmDeletePost() {
         const confirmation = confirm("Are you sure you want to delete the image?");
 
         if (confirmation) {
@@ -51,6 +62,53 @@
             window.alert("Image deleted successfully!");
         }
     }
+
+    function confirmDeleteTags() {
+        var checkboxes = document.querySelectorAll("#tag-list input[type='checkbox']");
+        var selectedOptions = [];
+
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                selectedOptions.push(checkbox.value);
+            }
+        });
+
+        if (selectedOptions.length > 0) {
+            alert("You chose: " + selectedOptions.join(", "));
+
+            // Convert selected options to parseable string
+            selectedOptions = selectedOptions.join(",");
+
+            var confirmation = confirm("Delete the tag as well?");
+            var deleteUrl;
+            if (confirmation) {
+                deleteUrl = "{{ url_for('remove_tags', id=image_stats.id, delete=true) | safe }}";
+                deleteUrl = deleteUrl + `&tags=${selectedOptions}`;
+                window.location.href = deleteUrl;
+                alert("Tags Deleted");
+            } else {
+                deleteUrl = "{{ url_for('remove_tags', id=image_stats.id, delete=false) | safe }}";
+                deleteUrl = deleteUrl + `&tags=${selectedOptions}`;
+                console.log(deleteUrl);
+                alert("Tag(s) Removed");
+            }
+        } else {
+            alert("No options selected");
+        }
+    }
+
+    // Check if at least one checkbox is checked
+    function updateButtonVisibility() {
+        var checkboxes = document.querySelectorAll("#tag-list input[type='checkbox']");
+        var isChecked = Array.from(checkboxes).some((checkbox) => {
+            return checkbox.checked;
+        });
+
+        buttonContainer.style.display = isChecked ? "block": "none";
+    }
+
+    // Add event listener to checkboxes
+    tagsList.addEventListener("change", updateButtonVisibility);
 </script>
 
 {% endblock %}
