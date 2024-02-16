@@ -3,7 +3,7 @@ import os
 class Config:
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024    # 1 GB
 
-    UPLOAD_EXTENSIONS = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+    UPLOAD_EXTENSIONS = [".avif", ".bmp", ".gif", ".jpg", ".jpeg", ".png", ".webp"]
 
     SECRET_KEY = "super secret key"
 

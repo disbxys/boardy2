@@ -36,9 +36,11 @@ run_gui()
 
 ## Supported Media Formats
 Boardy2 currently only supports a limited number of image formats:
+- avif
+- bmp
+- gif
 - jpg & jpeg
 - png
-- gif
 - webp
 
 ## Q&A
