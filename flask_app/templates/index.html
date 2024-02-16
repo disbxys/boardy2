@@ -2,6 +2,28 @@
 
 {% block title %}Home Page{% endblock %}
 
+{% block styles %}
+<link href="//code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" rel="Stylesheet"></link>
+
+<script type="text/javascript">
+    $(function() {
+        $("#tags").autocomplete({
+            source:function(request, response) {
+                var inputParts = request.term.split(" ");
+                var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
+
+                $.getJSON("{{ url_for('tag_suggestions') }}", {
+                    q: query,
+                }, function(data) {
+                    response(data.suggestions);
+                });
+            },
+            minLength: 2
+        });
+    })
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="content">
     <!-- <h1>Home Page</h1> -->
@@ -36,7 +58,7 @@
     <div class="images-container">
         <table class="images-table">
             <tbody>
-                {% for image_batch in images | batch(8) %}
+                {% for image_batch in images | batch(4) %}
                     <tr class="images-row">
                         {% for image in image_batch %}
                             <td class="image-cell">

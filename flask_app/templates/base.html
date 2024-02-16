@@ -23,7 +23,16 @@
             h1 {
                 text-align: center;
             }
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+            a:hover {
+                color:orange;
+                cursor: pointer;
+            }
         </style>
+        {% block styles %} {% endblock %}
     </head>
     <body>
         <div class="content-container">

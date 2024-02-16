@@ -4,7 +4,10 @@ import mimetypes
 import os
 from typing import List, Optional
 
-from flask import abort, request, redirect, url_for, send_from_directory, render_template
+from flask import (
+    abort, jsonify, redirect, render_template, request,
+    send_from_directory, url_for
+)
 
 from flask_app import app
 from flask_app.models import db, Image, image_tag, Tag
@@ -94,6 +97,21 @@ def get_tags():
     tags = Tag.query.all()
 
     return {"tags": [tag.name for tag in tags]}
+
+
+@app.route("/tags/suggestions")
+def tag_suggestions():
+    query = request.args.get("q", "")
+
+    tags = Tag.query\
+        .filter(Tag.name.ilike(f"{query}%"))\
+        .order_by(Tag.name)\
+        .limit(10)\
+        .all()
+
+    suggestions = [tag.name for tag in tags]
+    
+    return jsonify({"suggestions": suggestions})
 
 
 @app.route("/tags/add/<int:image_id>", methods=["POST"])
