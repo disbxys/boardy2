@@ -35,19 +35,20 @@ jobs:
         run: |
           set -e
 
-          commit_count=$(git rev-list --count HEAD)
+          commit_count=$(git rev-list --count HEAD 2>dev/null || echo 0)
           echo "COMMIT_COUNT=$commit_count" >> $GITHUB_ENV
-          current_sha=$(git rev-parse --short HEAD)
-          echo "CURRENT_SHA=$current_sha" >> $GITHUB_ENV
 
-          prev_commit_count=$(echo "${{ steps.last_release.outputs.tag_name }}" | sed -e "s/^r//")
-          if [ -z "$prev_commit_count" ]; then
-            prev_commit_count=0
+          if [ "$commit_count" -gt 0 ]; then
+            current_sha=$(git rev-parse --short HEAD)
+            echo "CURRENT_SHA=$current_sha" >> $GITHUB_ENV
+
+            prev_commit_count=$(echo "${{ steps.last_release.outputs.tag_name }}" | sed -e "s/^r//" || echo 0)
+            commit_count_diff=$(expr $commit_count - $prev_commit_count)
+            prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
+            echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_ENV
+          else
+            echo "No previous release found. Skipping further calculations."
           fi
-          
-          commit_count_diff=$(expr $commit_count - $prev_commit_count)
-          prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
-          echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_ENV
 
       - name: Zip source code
         run: zip -r source_code.zip . -x "*.git*"
@@ -63,7 +64,6 @@ jobs:
           body: |
             ### Commits
 
-            https://github.com/disbxys/boardy2/compare/${{ env.PREV_RELEASE_SHA }}...${{ env.CURRENT_SHA }}
           draft: false
           prerelease: false
           commitish: ${{ github.sha }}
