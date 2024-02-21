@@ -55,11 +55,12 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         with:
+          files: source_code.zip
           tag_name: r${{ env.COMMIT_COUNT }}
           name: Boardy2 r${{ env.COMMIT_COUNT }}
           body: |
             ### Commits
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: source_code.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
