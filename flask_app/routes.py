@@ -1,8 +1,8 @@
 from datetime import datetime
 import hashlib
-import mimetypes
+import magic
 import os
-from typing import List, Optional
+from typing import List
 
 from flask import (
     abort, jsonify, redirect, render_template, request,
@@ -193,17 +193,14 @@ def upload_file():
                 #  Calculate file hash to use as new filename
                 file_hash = sha256_hash_image_data(file.stream.read())
 
-                file_stem, file_ext = os.path.splitext(file.filename)
-                # Handle edgecase such as '.jpg' as the entire filename
-                if file_ext == "":
-                    file_ext = file_stem
+                is_valid_upload, mimetype = is_image_file(file)
 
                 # Enforce allowed file upload extensions
-                if file_ext not in app.config["UPLOAD_EXTENSIONS"]:
-                    continue
+                if not is_valid_upload: continue
 
                 # Create new filename using file hash and keep extension
-                new_filename = file_hash + file_ext
+                file_ext = mimetype.split("/")[1].lower()
+                new_filename = f"{file_hash}.{file_ext}"
 
                 # Create a save path based on file hash
                 image_dir = get_image_dir(file_hash)
@@ -278,7 +275,7 @@ def get_image_stats(id: int) -> dict:
     i_mtime = datetime.fromtimestamp(istats.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
 
     # Get image type
-    mtype, _ = mimetypes.guess_type(image_path)
+    mtype = magic.from_file(image_path, mime=True)
 
     image_stats = {
         "id": image.id,
@@ -303,3 +300,16 @@ def search_exact_tag(keyword: str) -> Tag:
     '''Returns an exact match for a Tag or none.'''
     # TODO: Add image count for each tag result
     return Tag.query.filter_by(name=keyword).first()
+
+
+def is_image_file(file):
+    """
+    Returns True if file is an image.
+
+    This relies on the accuracy of python magic.
+    """
+    file.seek(0)    # Reset seek header
+    mime_type = magic.from_buffer(file.read(2048), mime=True)
+    file.seek(0)    # Reset seek header again
+
+    return mime_type.startswith("image/"), mime_type
