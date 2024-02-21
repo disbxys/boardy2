@@ -66,5 +66,4 @@ jobs:
 
           draft: false
           prerelease: false
-          commitish: ${{ github.sha }}
           files: source_code.zip
