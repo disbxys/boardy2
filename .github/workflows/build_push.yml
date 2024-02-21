@@ -1,66 +1,48 @@
 name: Build job
 
-
 on:
   push:
-    branches:
-      - main
+    # branches: [main] # Uncomment to restrict this workflow to only run on pushes to the main branch
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.9'  # Adjust this to your project's Python version
 
+      # Optional: Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt  # Assuming you have a requirements.txt file
 
-      - name: Get previous release
-        id: last_release
-        uses: InsonusK/get-latest-release@v1.1.0
-        with:
-          myToken: ${{ github.token }}
-          exclude_types: "draft|prerelease"
-          view_top: 1
-
-      - name: Prepare build
+      - name: Get Previous Release
+        id: prev_release
         run: |
-          set -e
-
-          commit_count=$(git rev-list --count HEAD)
-          echo "COMMIT_COUNT=$commit_count" >> $GITHUB_ENV
-          current_sha=$(git rev-parse --short HEAD)
-          echo "CURRENT_SHA=$current_sha" >> $GITHUB_ENV
-
-          prev_commit_count=$(echo "${{ steps.last_release.outputs.tag_name }}" | sed -e "s/^r//" || echo 0)
-          commit_count_diff=$(expr $commit_count - $prev_commit_count)
-          prev_release_sha=$(git rev-parse --short HEAD~$commit_count_diff)
-          echo "PREV_RELEASE_SHA=$prev_release_sha" >> $GITHUB_ENV
+          PREV_RELEASE=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r .tag_name)
+          echo "Previous release: $PREV_RELEASE" >> $GITHUB_ENV
 
       - name: Zip source code
         run: zip -r source_code.zip . -x "*.git*"
 
-      - name: Create Release
-        id: create_release
+      - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v1
+        with:
+          files: source_code.zip
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body: |
+            Description of the release
+            
+            ## Changes since $PREV_RELEASE
+            \`\`\`
+            $(git log --pretty=format:"%h - %s" $PREV_RELEASE..${{ github.sha }})
+            \`\`\`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: r${{ env.COMMIT_COUNT }}
-          name: Boardy2 r${{ env.COMMIT_COUNT }}
-          body: |
-            ### Commits
-
-            https://github.com/disbxys/boardy2/compare/${{ env.PREV_RELEASE_SHA }}...${{ env.CURRENT_SHA }}
-          draft: false
-          prerelease: false
-          commitish: ${{ github.sha }}
-          files: source_code.zip
