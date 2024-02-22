@@ -1,7 +1,14 @@
+
+
 from flask_app import app
 
 
-if __name__ == "__main__":
-    PORT = 5000
+def launch_app(host=None, port=5000):
+    if host is not None:
+        app.run(host=host, port=port, debug=True)
+    else:
+        app.run(port=port, debug=True)
 
-    app.run(port=PORT, debug=True)
+
+if __name__ == "__main__":
+    launch_app()
