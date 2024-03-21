@@ -41,8 +41,9 @@
         <span><strong>Date:</strong> {{ image_stats.date }}</span><br/>
         <span><strong>File Type:</strong> {{ image_stats.mimetype }}</span><br/>
         <span>
-            View full image
-            <a href="{{ url_for('get_image', id=image_stats.id) }}">here</a>
+            <a href="{{ url_for('get_image', id=image_stats.id) }}">
+                <button>View original</button>
+            </a>
         </span>
     </div>
     <div class="delete-button-container" id="delete-button-container">
