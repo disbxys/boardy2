@@ -47,3 +47,8 @@ A: I probably haven't done it that way either because it would take too much tim
 
 Q: Thank you for creating this app.\
 A: Not a question but thank you
+
+
+## Related Projects
+
+- [Boardy3](https://github.com/disbxys/boardy3) (native desktop alternative version)
