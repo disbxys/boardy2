@@ -8,4 +8,4 @@ class Config:
     SQLALCHEMY_DATABASE_URI = "sqlite:///image_database.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    UPLOAD_FOLDER = os.path.join(os.getcwd(), "db")
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), "db", "image_files")
