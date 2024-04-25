@@ -184,7 +184,7 @@ def upload_file():
         with db.session.no_autoflush as db_session:
 
             # temp: TODO: implement tag function
-            tag = Tag.query.filter_by(name="general_default").first()
+            tag = Tag.query.filter_by(name="general").first()
             if not tag:
                 tag = Tag(name="general_default")
 
