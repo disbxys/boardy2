@@ -11,7 +11,26 @@ Flask
 Flask-SQLAlchemy
 ``````
 
-<italic>You might need to also install `python-magic-bin` if running on windows.</italic>
+### Missing Libmagic
+There is a good chance that you will run into this error
+
+```
+File "C:\Users\default\AppData\Roaming\Python\Python3\site-packages\magic\loader.py", line 49, in load_lib
+    raise ImportError('failed to find libmagic.  Check your installation')
+ImportError: failed to find libmagic.  Check your installation
+```
+
+#### Windows
+
+You can fetch the DLLs for Windows for libmagic from @julian-r with
+```
+pip install python-magic-bin
+```
+
+Make sure to have this installed **AFTER** installing `python-magic`. Otherwise, you can run into the same error.
+
+#### Other OSs
+Refer to https://github.com/ahupp/python-magic#installation for more information
 
 ## How to Run
 This program is run through a web browser by running `launch.py`.
