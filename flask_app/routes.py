@@ -13,10 +13,11 @@ from flask_app import app
 from flask_app.models import db, Image, image_tag, Tag
 
 
+ROWS_PER_PAGE = 42
+
+
 @app.route("/")
 def index():
-    rows_per_page = 42
-
     page = request.args.get("page", 1, type=int)
     tags_string = request.args.get("tags", "")
     
@@ -37,7 +38,7 @@ def index():
 
         query = query.order_by(Image.id.desc())
 
-    images = query.paginate(page=page, per_page=rows_per_page)
+    images = query.paginate(page=page, per_page=ROWS_PER_PAGE)
 
     return render_template("index.html", images=images)
 
@@ -139,6 +140,23 @@ def add_tag_to_image(image_id):
         db.session.commit()
     
     return redirect(url_for("get_image_post", id=image_id))
+
+
+@app.route("/tags/<string:name>")
+def get_images_by_tag(name: str):
+    page = request.args.get("page", 1, type=int)
+
+    tag = Tag.query.filter_by(name=name).first_or_404()
+
+    query = db.session.query(Image)\
+        .join(image_tag, image_tag.c.image_id == Image.id)\
+        .join(Tag, Tag.id == image_tag.c.tag_id)\
+        .filter(Tag.name == tag.name)\
+        .order_by(Image.id.desc())
+    
+    images = query.paginate(page=page, per_page=ROWS_PER_PAGE)
+
+    return render_template("tag.html", tag=tag, images=images)
 
 
 @app.route("/tags/delete")

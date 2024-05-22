@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tag.name }} ({{ tag.images|length }}){% endblock %}
+
+{% block styles %}
+<link href="//code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" rel="Stylesheet"></link>
+
+<style>
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 10px;
+        padding: 10px;
+        max-width: 1000px;
+        width: 100%;
+    }
+    .gallery img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+</style>
+
+<!-- <script type="text/javascript">
+    $(function() {
+        $("#tags").autocomplete({
+            source:function(request, response) {
+                var inputParts = request.term.split(" ");
+                var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
+
+                $.getJSON("{{ url_for('tag_suggestions') }}", {
+                    q: query,
+                }, function(data) {
+                    response(data.suggestions);
+                });
+            },
+            minLength: 2
+        });
+    })
+</script> -->
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h1>{{ tag.name }} ({{ tag.images|length }})</h1>
+
+    {% if images.pages > 0 %}
+    <div class="pagination" style="text-align: center;">
+        {% if images.has_prev %}
+        <a href="{{ url_for('get_images_by_tag', name=tag.name, page=images.prev_num) }}">Previous</a>
+        {% endif %}
+        
+        {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+            <a href="{{ url_for('get_images_by_tag', name=tag.name, page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+            ...
+            {% endif %}
+        {% endfor %}
+
+        {% if images.has_next %}
+        <a href="{{ url_for('get_images_by_tag', name=tag.name, page=images.next_num) }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="images-container">
+        <table class="images-table">
+            <tbody>
+                {% for image_batch in images | batch(4) %}
+                    <tr class="images-row">
+                        {% for image in image_batch %}
+                            <td class="image-cell">
+                                <div class="image-post" style="display: flex; align-items: center; justify-content: center;">
+                                    <a href="{{ url_for('get_image_post', id=image.id) }}">
+                                        <img
+                                            src="{{ url_for('get_image', id=image.id) }}"
+                                            style="max-width: 200px; max-height: 200px; padding: 5px;"
+                                            loading="lazy"
+                                        >
+                                    </a>
+                                </div>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if images.pages > 0 %}
+    <div class="pagination" style="text-align: center;">
+        {% if images.has_prev %}
+        <a href="{{ url_for('get_images_by_tag', name=tag.name, page=images.prev_num) }}">Previous</a>
+        {% endif %}
+
+        {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+            <a href="{{ url_for('get_images_by_tag', name=tag.name, page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+            ...
+            {% endif %}
+        {% endfor %}
+
+        {% if images.has_next %}
+        <a href="{{ url_for('get_images_by_tag', name=tag.name, page=images.next_num) }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+</div>
+
+{% endblock %}
