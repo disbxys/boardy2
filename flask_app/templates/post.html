@@ -19,7 +19,7 @@
             {% for tag in tags %}
                 <li>
                     <input type="checkbox" value="{{ tag[0].id }}"><span>
-                        <a href="{{ url_for('index', tags=tag[0].name) }}">
+                        <a href="{{ url_for('get_images_by_tag', name=tag[0].name) }}">
                             {{ tag[0].name }}
                         </a>
                         ({{ tag[1] }})
