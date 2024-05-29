@@ -17,6 +17,7 @@ ROWS_PER_PAGE = 42
 
 
 @app.route("/")
+@app.route("/home")
 def index():
     page = request.args.get("page", 1, type=int)
     tags_string = request.args.get("tags", "")
