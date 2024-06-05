@@ -44,7 +44,7 @@ def index():
     return render_template("index.html", images=images)
 
 
-@app.route("/delete/<int:id>")
+@app.route("/delete/<int:id>", methods=["DELETE"])
 def delete_image(id):
     image = get_image_from_db(id)
     
@@ -160,7 +160,7 @@ def get_images_by_tag(name: str):
     return render_template("tag.html", tag=tag, images=images)
 
 
-@app.route("/tags/delete")
+@app.route("/tags/delete", methods=["DELETE"])
 def remove_tags():
     """
     Take a list of tag ids and either remove them from the image
