@@ -9,3 +9,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     UPLOAD_FOLDER = os.path.join(os.getcwd(), "db", "image_files")
+    THUMBNAIL_FOLDER = os.path.join(os.getcwd(), "db", "thumbnails")

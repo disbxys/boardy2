@@ -8,6 +8,7 @@ from flask import (
     abort, jsonify, redirect, render_template, request,
     send_from_directory, url_for
 )
+from PIL import Image as PILImage
 
 from flask_app import app
 from flask_app.models import db, Image, image_tag, Tag
@@ -59,6 +60,12 @@ def delete_image(id):
     db.session.delete(image)
     db.session.commit()
 
+    # Delete thumbnail if it exists
+    thumbnail_path = get_thumbnail_filepath(image.filename)
+    print(thumbnail_path)
+    if os.path.exists(thumbnail_path):
+        os.remove(thumbnail_path)
+
     return redirect(url_for("index"))
 
 
@@ -66,12 +73,20 @@ def delete_image(id):
 def get_image(id):
     image = get_image_from_db(id)
 
-    img_dir = os.path.normpath(os.path.join(
-        app.config["UPLOAD_FOLDER"],
-        get_image_dir(image.filename)
-    ))
+    if os.path.exists(get_thumbnail_filepath(image.filename)):
 
-    return send_from_directory(img_dir, image.filename)
+        thumbnail_dir = get_thumbnail_dir(image.filename)
+        thumbnail_filename = f"sample_{image.filename}"
+
+        return send_from_directory(thumbnail_dir, thumbnail_filename)
+
+    else:
+        img_dir = os.path.normpath(os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            get_image_dir(image.filename)
+        ))
+
+        return send_from_directory(img_dir, image.filename)
 
 
 @app.route("/posts/<int:id>")
@@ -202,7 +217,7 @@ def upload_file():
         with db.session.no_autoflush as db_session:
 
             # temp: TODO: implement tag function
-            tag = Tag.query.filter_by(name="general").first()
+            tag = Tag.query.filter_by(name="general_default").first()
             if not tag:
                 tag = Tag(name="general_default")
 
@@ -245,6 +260,13 @@ def upload_file():
                         outfile.write(chunk)
                 app.logger.info(f"New image saved to database: {new_filename}")
 
+                # Generate a thumbnail
+                thumbnail_dir = get_thumbnail_dir(new_filename)
+                os.makedirs(thumbnail_dir, exist_ok=True)
+                thumbnail_filename = f"sample_{new_filename}"
+                thumbnail_path = os.path.join(thumbnail_dir, thumbnail_filename)
+                create_thumbnail(save_path, thumbnail_path)
+
                 ####
                 image = Image(filename=new_filename)
                 image.tags.append(tag)
@@ -276,6 +298,20 @@ def get_image_dir(filename: str) -> str:
     return os.path.normpath(os.path.join(
         app.config["UPLOAD_FOLDER"],
         f"{filename[:2]}/{filename[2:4]}"
+    ))
+
+
+def get_thumbnail_dir(filename: str) -> str:
+    return os.path.normpath(os.path.join(
+        app.config["THUMBNAIL_FOLDER"],
+        f"{filename[:2]}/{filename[2:4]}"
+    ))
+
+
+def get_thumbnail_filepath(image_filename: str) -> str:
+    return os.path.normpath(os.path.join(
+        get_thumbnail_dir(image_filename),
+        f"sample_{image_filename}"
     ))
 
 
@@ -331,3 +367,9 @@ def is_image_file(file):
     file.seek(0)    # Reset seek header again
 
     return mime_type.startswith("image/"), mime_type
+
+
+def create_thumbnail(input_path: str, output_path: str, max_size = (650, 650)):
+    with PILImage.open(input_path) as img:
+        img.thumbnail(max_size)
+        img.save(output_path)
