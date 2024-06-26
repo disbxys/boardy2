@@ -43,7 +43,7 @@ def index():
     return render_template("index.html", images=images)
 
 
-@app.route("/delete/<int:id>", methods=["DELETE"])
+@app.route("/delete/<int:id>", methods=["GET", "DELETE"])
 def delete_image(id):
     image = get_image_from_db(id)
     
