@@ -4,6 +4,7 @@ import magic
 import os
 from typing import List
 
+import cv2
 from flask import (
     abort, jsonify, redirect, render_template, request,
     send_from_directory, url_for
@@ -73,20 +74,22 @@ def delete_image(id):
 def get_image(id):
     image = get_image_from_db(id)
 
-    if os.path.exists(get_thumbnail_filepath(image.filename)):
+    img_dir = os.path.normpath(os.path.join(
+        app.config["UPLOAD_FOLDER"],
+        get_image_dir(image.filename)
+    ))
 
-        thumbnail_dir = get_thumbnail_dir(image.filename)
-        thumbnail_filename = f"sample_{image.filename}"
+    return send_from_directory(img_dir, image.filename)
 
-        return send_from_directory(thumbnail_dir, thumbnail_filename)
 
-    else:
-        img_dir = os.path.normpath(os.path.join(
-            app.config["UPLOAD_FOLDER"],
-            get_image_dir(image.filename)
-        ))
+@app.route("/thumbnails/<int:id>")
+def get_thumbnail(id):
+    image = get_image_from_db(id)
 
-        return send_from_directory(img_dir, image.filename)
+    thumbnail_dir = get_thumbnail_dir(image.filename)
+    thumbnail_filename = create_thumbnail_filename(image.filename)
+
+    return send_from_directory(thumbnail_dir, thumbnail_filename)
 
 
 @app.route("/posts/<int:id>")
@@ -182,7 +185,7 @@ def remove_tags():
     """
     image_id = request.args.get("id")
     delete_ = request.args.get("delete", type=lambda x: x.lower() == "true")
-    tags_string = request.args.get("tags")
+    tags_string = request.args.get("tags", "", str)
 
     tags_list = [int(tag_id) for tag_id in tags_string.split(",")]
     tags = db.session.query(Tag)\
@@ -227,6 +230,10 @@ def upload_file():
                 file_hash = sha256_hash_image_data(file.stream.read())
 
                 is_valid_upload, mimetype = is_image_file(file)
+                is_video = False
+                if is_valid_upload is False:
+                    is_valid_upload, mimetype = is_video_file(file)
+                    is_video = True
 
                 # Enforce allowed file upload extensions
                 if not is_valid_upload: continue
@@ -265,10 +272,10 @@ def upload_file():
                 os.makedirs(thumbnail_dir, exist_ok=True)
                 thumbnail_filename = f"sample_{new_filename}"
                 thumbnail_path = os.path.join(thumbnail_dir, thumbnail_filename)
-                create_thumbnail(save_path, thumbnail_path)
+                create_thumbnail(save_path, thumbnail_path, video = is_video)
 
                 ####
-                image = Image(filename=new_filename)
+                image = Image(filename=new_filename, is_video=is_video)
                 image.tags.append(tag)
 
                 files_saved.append(image)
@@ -281,7 +288,7 @@ def upload_file():
 
 
 def get_image_from_db(id: int) -> Image:
-    image = Image.query.filter_by(id=id).first()
+    image = Image.query.filter_by(id=id).first_or_404()
 
     # I have no idea why favicon.ico randomly gets
     # inserted into the db. Just ignore it
@@ -311,8 +318,12 @@ def get_thumbnail_dir(filename: str) -> str:
 def get_thumbnail_filepath(image_filename: str) -> str:
     return os.path.normpath(os.path.join(
         get_thumbnail_dir(image_filename),
-        f"sample_{image_filename}"
+        f"sample_{os.path.splitext(image_filename)[0]}.jpg"
     ))
+
+
+def create_thumbnail_filename(filename: str) -> str:
+    return f"sample_{os.path.splitext(filename)[0]}.jpg"
 
 
 def get_image_stats(id: int) -> dict:
@@ -328,20 +339,27 @@ def get_image_stats(id: int) -> dict:
     istats = os.stat(image_path)
     i_mtime = datetime.fromtimestamp(istats.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
 
-    # Get image type
+    # Get media type
     mtype = magic.from_file(image_path, mime=True)
+    media_type = None
+    if mtype:
+        if mtype.split("/")[0].lower() == "image":
+            media_type = "image"
+        elif mtype.split("/")[0].lower() == "video":
+            media_type = "video"
 
     image_stats = {
         "id": image.id,
         "name": image.filename,
         "date": i_mtime,
+        "media_type": media_type,
         "mimetype": mtype.split("/")[1].upper() if mtype else "Unknown"
     }
 
     return image_stats
 
 
-def search_tags(keyword: str) -> List[Tag]:
+def search_tags(keyword: str) -> List[tuple[Tag, int]]:
     '''Returns a list of matching tags from querying the keyword.'''
     # TODO: Add image count for each tag result
     matching_tags = Tag.query.filter(Tag.name.like(f"%{keyword}%")).all() or list()
@@ -353,7 +371,7 @@ def search_tags(keyword: str) -> List[Tag]:
 def search_exact_tag(keyword: str) -> Tag:
     '''Returns an exact match for a Tag or none.'''
     # TODO: Add image count for each tag result
-    return Tag.query.filter_by(name=keyword).first()
+    return Tag.query.filter_by(name=keyword).first_or_404()
 
 
 def is_image_file(file):
@@ -369,7 +387,54 @@ def is_image_file(file):
     return mime_type.startswith("image/"), mime_type
 
 
-def create_thumbnail(input_path: str, output_path: str, max_size = (650, 650)):
-    with PILImage.open(input_path) as img:
-        img.thumbnail(max_size)
-        img.save(output_path)
+def is_video_file(file):
+    """
+    Returns True if file is an video.
+
+    This relies on the accuracy of python magic.
+    """
+    file.seek(0)    # Reset seek header
+    mime_type = magic.from_buffer(file.read(2048), mime=True)
+    file.seek(0)    # Reset seek header again
+
+    return mime_type.startswith("video/"), mime_type
+
+
+def create_thumbnail(input_path: str, output_path: str, video: bool, max_size = (650, 650)):
+    thumbnail_filename_stem, _ = os.path.splitext(os.path.basename(output_path))
+    if "sample_" in thumbnail_filename_stem:
+        thumbnail_filename = f"{thumbnail_filename_stem}.jpg"
+    else:
+        thumbnail_filename = f"sample_{thumbnail_filename_stem}.jpg"
+
+    output_path = os.path.join(os.path.dirname(output_path), thumbnail_filename)
+
+    if video is True:
+        create_thumbnail_from_video(input_path, output_path)
+    else:
+        with PILImage.open(input_path) as img:
+            img.thumbnail(max_size)
+            img.save(output_path)
+
+
+def create_thumbnail_from_video(input_path: str, output_path: str):
+    cap = cv2.VideoCapture(input_path)
+
+    try:
+        # Get the video duration in ms
+        total_duration = cap.get(cv2.CAP_PROP_FRAME_COUNT) / cap.get(cv2.CAP_PROP_FPS) * 1000
+        
+        # Pick a time to extract a frame from the video
+        time = total_duration / 4   # 1/4 into the video
+
+        # Set the position of the frame to capture (in ms)
+        cap.set(cv2.CAP_PROP_POS_MSEC, time)
+
+        success, frame = cap.read()
+
+        assert success is True
+
+        cv2.imwrite(output_path, frame)
+    finally:
+        # Release the video capture
+        cap.release()

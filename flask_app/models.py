@@ -25,6 +25,7 @@ class Tag(db.Model):
 class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(255), unique=True, nullable=False)
+    is_video = db.Column(db.Boolean, nullable=False, default=False)
 
     # Define the many-to-many relationship with Tag
     tags = db.relationship("Tag", secondary=image_tag, backref="images")
