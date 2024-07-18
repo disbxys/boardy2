@@ -63,7 +63,7 @@ def delete_image(id):
 
     # Delete thumbnail if it exists
     thumbnail_path = get_thumbnail_filepath(image.filename)
-    print(thumbnail_path)
+    
     if os.path.exists(thumbnail_path):
         os.remove(thumbnail_path)
 
@@ -239,7 +239,7 @@ def upload_file():
                 if not is_valid_upload: continue
 
                 # Create new filename using file hash and keep extension
-                file_ext = mimetype.split("/")[1].lower()
+                file_ext = translate_mimetype_to_ext(mimetype).lower()
                 new_filename = f"{file_hash}.{file_ext}"
 
                 # Create a save path based on file hash
@@ -326,6 +326,17 @@ def create_thumbnail_filename(filename: str) -> str:
     return f"sample_{os.path.splitext(filename)[0]}.jpg"
 
 
+def translate_mimetype_to_ext(mtype: str) -> str:
+    # Special cases where mimetype needs to be converted
+    # into a valid/standardized file format
+    mtype_special_cases = {
+        "x-matroska": "mkv"
+    }
+
+    mtype = mtype.split("/")[1]
+    return mtype_special_cases.get(mtype.lower(), mtype).lower()
+
+
 def get_image_stats(id: int) -> dict:
     image = get_image_from_db(id)
 
@@ -342,18 +353,22 @@ def get_image_stats(id: int) -> dict:
     # Get media type
     mtype = magic.from_file(image_path, mime=True)
     media_type = None
+    media_format = "UNKNOWN"
     if mtype:
         if mtype.split("/")[0].lower() == "image":
             media_type = "image"
         elif mtype.split("/")[0].lower() == "video":
             media_type = "video"
 
+        # Special case
+        media_format = translate_mimetype_to_ext(mtype).upper()
+
     image_stats = {
         "id": image.id,
         "name": image.filename,
         "date": i_mtime,
         "media_type": media_type,
-        "mimetype": mtype.split("/")[1].upper() if mtype else "Unknown"
+        "mimetype": media_format
     }
 
     return image_stats
