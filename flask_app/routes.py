@@ -220,9 +220,13 @@ def upload_file():
         with db.session.no_autoflush as db_session:
 
             # temp: TODO: implement tag function
-            tag = Tag.query.filter_by(name="general_default").first()
-            if not tag:
-                tag = Tag(name="general_default")
+            general_tag = Tag.query.filter_by(name="general").first()
+            if not general_tag:
+                general_tag = Tag(name="general")
+
+            video_tag = Tag.query.filter_by(name="video").first()
+            if not video_tag:
+                video_tag = Tag(name="video")
 
             files_saved = list()
             for file in files:
@@ -276,7 +280,9 @@ def upload_file():
 
                 ####
                 image = Image(filename=new_filename, is_video=is_video)
-                image.tags.append(tag)
+                image.tags.append(general_tag)
+                if is_video or file_ext == "gif":
+                    image.tags.append(video_tag)
 
                 files_saved.append(image)
 
@@ -429,7 +435,7 @@ def create_thumbnail(input_path: str, output_path: str, video: bool, max_size = 
     else:
         with PILImage.open(input_path) as img:
             img.thumbnail(max_size)
-            img.save(output_path)
+            img.convert("RGB").save(output_path)
 
 
 def create_thumbnail_from_video(input_path: str, output_path: str):
