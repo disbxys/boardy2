@@ -177,7 +177,7 @@ def get_images_by_tag(name: str):
     return render_template("tag.html", tag=tag, images=images)
 
 
-@app.route("/tags/delete", methods=["DELETE"])
+@app.route("/tags/delete", methods=["DELETE", "GET"])
 def remove_tags():
     """
     Take a list of tag ids and either remove them from the image
