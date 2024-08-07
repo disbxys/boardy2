@@ -112,10 +112,25 @@ def get_image_post(id):
 
 
 @app.route("/tags")
-def get_tags():
-    tags = Tag.query.all()
+def tags_index():
+    letter: str | None = request.args.get("letter", type=str)
 
-    return {"tags": [tag.name for tag in tags]}
+    query = db.session.query(Tag)
+    if letter is not None:
+        if (not letter.isalnum()) and (len(letter) != 1): abort (404)
+
+        if not letter.isalpha():
+            letter = "."
+
+        if letter == ".":
+            query = query.filter(~Tag.name.op("REGEXP")(r"^[a-zA-Z]"))
+        else:
+            query = query.filter(Tag.name.ilike(f"{letter}%"))
+
+    tags = query.order_by(Tag.name).all()
+    print(tags)
+
+    return render_template("tags_index.html", tags=tags)
 
 
 @app.route("/tags/suggestions")
@@ -166,6 +181,9 @@ def get_images_by_tag(name: str):
 
     tag = Tag.query.filter_by(name=name).first_or_404()
 
+    title = tag.name.replace("_", " ").title()
+    print(f"Title: {title}")
+
     query = db.session.query(Image)\
         .join(image_tag, image_tag.c.image_id == Image.id)\
         .join(Tag, Tag.id == image_tag.c.tag_id)\
@@ -174,7 +192,7 @@ def get_images_by_tag(name: str):
     
     images = query.paginate(page=page, per_page=ROWS_PER_PAGE)
 
-    return render_template("tag.html", tag=tag, images=images)
+    return render_template("tag.html", title=title, tag=tag, images=images)
 
 
 @app.route("/tags/delete", methods=["DELETE", "GET"])
