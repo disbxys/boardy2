@@ -21,13 +21,18 @@ PER_PAGE = 42
 @app.route("/")
 def index():
     page = request.args.get("page", 1, type=int)
-    tags_string = request.args.get("tags", "")
+    search_string = request.args.get("tags", "")
+
+    # All keywords in the search string must be valid tags
+    keywords = search_string.split()
+    tags = Tag.query.filter(Tag.name.in_(keywords)).all()
     
-    tags = Tag.query.filter(Tag.name.in_(tags_string.split())).all()
-    
-    if (tags_string != "") and (len(tags) == 0):
-        # No valid tags where found and the tags arg was not empty
+    if (search_string.strip() == ""):
+        # Empty search bar means search all
         query = db.session.query(Image).filter_by(id=None)
+    elif len(keywords) != len(tags):
+        # Not all keywords in the search string were valid tag names
+        abort(404)
     else:
         # Create the start of the search query string
         query = db.session.query(Image)\
@@ -42,7 +47,7 @@ def index():
 
     images = query.paginate(page=page, per_page=PER_PAGE)
 
-    return render_template("index.html", images=images, keyword=tags_string)
+    return render_template("index.html", images=images, keyword=search_string)
 
 
 @app.route("/delete/<int:id>", methods=["GET", "DELETE"])
@@ -143,7 +148,9 @@ def tag_suggestions():
         .limit(10)\
         .all()
 
-    suggestions = [tag.name for tag in tags]
+    suggestions = [f"{tag.name} ({len(tag.images)})" for tag in tags]
+
+    print(suggestions)
     
     return jsonify({"suggestions": suggestions})
 

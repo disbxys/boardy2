@@ -5,23 +5,8 @@
 {% block styles %}
 <link href="//code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" rel="Stylesheet"></link>
 
-<script type="text/javascript">
-    $(function() {
-        $("#tags").autocomplete({
-            source:function(request, response) {
-                var inputParts = request.term.split(" ");
-                var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
-
-                $.getJSON("{{ url_for('tag_suggestions') }}", {
-                    q: query,
-                }, function(data) {
-                    response(data.suggestions);
-                });
-            },
-            minLength: 2
-        });
-    })
-</script>
+<script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
+<script src="//code.jquery.com/ui/1.10.2/jquery-ui.js" ></script>
 
 <script type="text/javascript">
     document.addEventListener("DOMContentLoaded", function() {
@@ -131,5 +116,28 @@
     </div>
     {% endif %}
 </div>
+
+<script type="text/javascript">
+    $(function() {
+        $("#tags").autocomplete({
+            source:function(request, response) {
+                var inputParts = request.term.split(" ");
+                var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
+    
+                $.getJSON("{{ url_for('tag_suggestions') }}", {
+                    q: query
+                }, function(data) {
+                    response(data.suggestions);
+                });
+            },
+            minLength: 2,
+            select: function(event, ui) {
+                console.log(ui.item.value);
+                console.log(ui.item.value.split(" "));
+                $(this).val(ui.item.value.split(" ")[0]);
+            }
+        });
+    })
+</script>
 
 {% endblock %}
