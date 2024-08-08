@@ -24,15 +24,15 @@ def index():
     search_string = request.args.get("tags", "")
 
     # All keywords in the search string must be valid tags
-    keywords = search_string.split()
+    keywords = [x.strip() for x in search_string.split() if x.strip() != ""]
     tags = Tag.query.filter(Tag.name.in_(keywords)).all()
     
     if (search_string.strip() == ""):
         # Empty search bar means search all
-        query = db.session.query(Image).filter_by(id=None)
+        query = db.session.query(Image)
     elif len(keywords) != len(tags):
         # Not all keywords in the search string were valid tag names
-        abort(404)
+        query = db.session.query(Image).filter_by(id=None)
     else:
         # Create the start of the search query string
         query = db.session.query(Image)\

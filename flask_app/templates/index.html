@@ -123,18 +123,34 @@
             source:function(request, response) {
                 var inputParts = request.term.split(" ");
                 var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
-    
-                $.getJSON("{{ url_for('tag_suggestions') }}", {
-                    q: query
-                }, function(data) {
-                    response(data.suggestions);
-                });
+
+                // Check if the last word as the query to the endpoint
+                if (query.length >= 2) {
+                    $.getJSON("{{ url_for('tag_suggestions') }}", {
+                        q: query
+                    }, function(data) {
+                        response(data.suggestions);
+                    });
+                } else {
+                    // If  minLength is not met, clear the suggestions
+                    response([]);
+                }
             },
-            minLength: 2,
+            focus: function(event, ui) {
+                // Prevent the suggestion from being inserted automatically
+                event.preventDefault();
+            },
             select: function(event, ui) {
-                console.log(ui.item.value);
-                console.log(ui.item.value.split(" "));
-                $(this).val(ui.item.value.split(" ")[0]);
+                // This should prevent default behavior to avoid double insertion
+                event.preventDefault();
+
+                var inputParts = $(this).val().split(" ");
+
+                inputParts[inputParts.length - 1] = ui.item.value.split(" ")[0];
+                // inputParts.pop();
+
+                $(this).val(inputParts.join(" ") + " ");
+                // return false;
             }
         });
     })
