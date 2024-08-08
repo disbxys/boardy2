@@ -42,7 +42,7 @@ def index():
 
     images = query.paginate(page=page, per_page=PER_PAGE)
 
-    return render_template("index.html", images=images)
+    return render_template("index.html", images=images, keyword=tags_string)
 
 
 @app.route("/delete/<int:id>", methods=["GET", "DELETE"])
