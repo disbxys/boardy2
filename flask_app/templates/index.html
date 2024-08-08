@@ -22,6 +22,37 @@
         });
     })
 </script>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const lazyLoadImages = document.querySelectorAll(".lazy-load");
+
+        if ("IntersectionObserver" in window) {
+            let imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove("lazy-load");
+                        observer.unobserve(img);
+                    }
+                });
+            });
+
+            lazyLoadImages.forEach((img) => {
+                imageObserver.observe(img);
+            });
+        } else {
+            // Fallback for browsers that do not support IntersectionObserver
+            lazyLoadImages.forEach((img) => {
+                img.src = img.dataset.src;
+                img.classList.remove("lazy-load");
+            });
+        }
+    });
+
+</script>
 {% endblock %}
 
 {% block content %}
@@ -65,9 +96,10 @@
                                 <div class="image-post" style="display: flex; align-items: center; justify-content: center;">
                                     <a href="{{ url_for('get_image_post', id=image.id) }}">
                                         <img
-                                            src="{{ url_for('get_thumbnail', id=image.id) }}"
+                                            src="/static/images/placeholder.jpg"
+                                            data-src="{{ url_for('get_thumbnail', id=image.id) }}"
                                             style="max-width: 200px; max-height: 200px; padding: 5px;"
-                                            loading="lazy"
+                                            loading="lazy" class="lazy-load"
                                         >
                                     </a>
                                 </div>
