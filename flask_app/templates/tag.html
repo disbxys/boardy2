@@ -21,23 +21,6 @@
     }
 </style>
 
-<!-- <script type="text/javascript">
-    $(function() {
-        $("#tags").autocomplete({
-            source:function(request, response) {
-                var inputParts = request.term.split(" ");
-                var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
-
-                $.getJSON("{{ url_for('tag_suggestions') }}", {
-                    q: query,
-                }, function(data) {
-                    response(data.suggestions);
-                });
-            },
-            minLength: 2
-        });
-    })
-</script> -->
 {% endblock %}
 
 {% block content %}

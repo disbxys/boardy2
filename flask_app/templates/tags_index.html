@@ -46,7 +46,6 @@
 
 {% block content %}
 <div class="content">
-    <!-- <h1>Home Page</h1> -->
 
     <div class="searchbox-container">
         <form action="{{ url_for('index') }}">
@@ -65,26 +64,6 @@
             {% endif %}
         {% endfor %}
     </div>
-
-    <!-- <div class="tags-container">
-        <table class="tags-table">
-            <tbody>
-                {% for tag_batch in tags | batch(3) %}
-                    <tr class="tags-row">
-                        {% for tag in tag_batch %}
-                            <td class="tag-cell">
-                                <div class="tag-post" style="display: flex; align-items: center; justify-content: center; width: 100px;">
-                                    <a href="{{ url_for('get_images_by_tag', name=tag.name) }}">
-                                        {{ tag.name }} ({{ tag.images | length }})
-                                    </a>
-                                </div>
-                            </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div> -->
 
     <div class="tags-container">
         <ul class="wrap-list">

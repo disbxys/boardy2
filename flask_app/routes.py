@@ -133,7 +133,6 @@ def tags_index():
             query = query.filter(Tag.name.ilike(f"{letter}%"))
 
     tags = query.order_by(Tag.name).all()
-    print(tags)
 
     return render_template("tags_index.html", tags=tags)
 
@@ -150,8 +149,6 @@ def tag_suggestions():
 
     suggestions = [f"{tag.name} ({len(tag.images)})" for tag in tags]
 
-    print(suggestions)
-    
     return jsonify({"suggestions": suggestions})
 
 
@@ -189,7 +186,6 @@ def get_images_by_tag(name: str):
     tag = Tag.query.filter_by(name=name).first_or_404()
 
     title = tag.name.replace("_", " ").title()
-    print(f"Title: {title}")
 
     query = db.session.query(Image)\
         .join(image_tag, image_tag.c.image_id == Image.id)\
