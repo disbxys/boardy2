@@ -15,7 +15,7 @@ from flask_app import app
 from flask_app.models import db, Image, image_tag, Tag
 
 
-ROWS_PER_PAGE = 42
+PER_PAGE = 42
 
 
 @app.route("/")
@@ -40,7 +40,7 @@ def index():
 
         query = query.order_by(Image.id.desc())
 
-    images = query.paginate(page=page, per_page=ROWS_PER_PAGE)
+    images = query.paginate(page=page, per_page=PER_PAGE)
 
     return render_template("index.html", images=images)
 
@@ -190,7 +190,7 @@ def get_images_by_tag(name: str):
         .filter(Tag.name == tag.name)\
         .order_by(Image.id.desc())
     
-    images = query.paginate(page=page, per_page=ROWS_PER_PAGE)
+    images = query.paginate(page=page, per_page=PER_PAGE)
 
     return render_template("tag.html", title=title, tag=tag, images=images)
 
