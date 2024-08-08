@@ -43,9 +43,9 @@ def index():
         for tag in tags:
             query = query.filter(Tag.name == tag.name)
 
-        query = query.order_by(Image.id.desc())
-
-    images = query.paginate(page=page, per_page=PER_PAGE)
+    images = query\
+        .order_by(Image.id.desc())\
+        .paginate(page=page, per_page=PER_PAGE)
 
     return render_template("index.html", images=images, keyword=search_string)
 
