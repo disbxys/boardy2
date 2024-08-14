@@ -50,6 +50,12 @@
         </form>
     </div>
 
+    {% if images.total > 0 %}
+    <div class="search-results-count" style="text-align: center;">
+        <h2>({{ images.total }}) results</h2>
+    </div>
+    {% endif %}
+
     {% if images.pages > 0 %}
     <div class="pagination" style="text-align: center;">
         {% if images.has_prev %}
