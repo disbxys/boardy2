@@ -43,13 +43,6 @@
 {% block content %}
 <div class="content">
 
-    <div class="searchbox-container">
-        <form action="{{ url_for('index') }}">
-            <input type="text" id="tags" name="tags" value="{{ keyword }}" placeholder="Search...">
-            <input type="submit" value="Search">
-        </form>
-    </div>
-
     {% if images.total > 0 %}
     <div class="search-results-count" style="text-align: center;">
         <h2>({{ images.total }}) results</h2>
@@ -121,44 +114,5 @@
     </div>
     {% endif %}
 </div>
-
-<script type="text/javascript">
-    $(function() {
-        $("#tags").autocomplete({
-            source:function(request, response) {
-                var inputParts = request.term.split(" ");
-                var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
-
-                // Check if the last word as the query to the endpoint
-                if (query.length >= 2) {
-                    $.getJSON("{{ url_for('tag_suggestions') }}", {
-                        q: query
-                    }, function(data) {
-                        response(data.suggestions);
-                    });
-                } else {
-                    // If  minLength is not met, clear the suggestions
-                    response([]);
-                }
-            },
-            focus: function(event, ui) {
-                // Prevent the suggestion from being inserted automatically
-                event.preventDefault();
-            },
-            select: function(event, ui) {
-                // This should prevent default behavior to avoid double insertion
-                event.preventDefault();
-
-                var inputParts = $(this).val().split(" ");
-
-                inputParts[inputParts.length - 1] = ui.item.value.split(" ")[0];
-                // inputParts.pop();
-
-                $(this).val(inputParts.join(" ") + " ");
-                // return false;
-            }
-        });
-    })
-</script>
 
 {% endblock %}
