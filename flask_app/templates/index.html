@@ -36,8 +36,11 @@
             });
         }
     });
-
 </script>
+
+<!-- CSS Styling -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/wrap-list.css') }}">
+
 {% endblock %}
 
 {% block content %}
@@ -74,28 +77,22 @@
     {% endif %}
 
     <div class="images-container">
-        <table class="images-table">
-            <tbody>
-                {% for image_batch in images | batch(4) %}
-                    <tr class="images-row">
-                        {% for image in image_batch %}
-                            <td class="image-cell">
-                                <div class="image-post" style="display: flex; align-items: center; justify-content: center;">
-                                    <a href="{{ url_for('get_image_post', id=image.id) }}">
-                                        <img
-                                            src="/static/images/placeholder.jpg"
-                                            data-src="{{ url_for('get_thumbnail', id=image.id) }}"
-                                            style="max-width: 200px; max-height: 200px; padding: 5px;"
-                                            loading="lazy" class="lazy-load"
-                                        >
-                                    </a>
-                                </div>
-                            </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <ul class="wrap-list">
+            {% for image in images %}
+                <li>
+                    <div style="vertical-align: middle; display: table-cell;">
+                        <a href="{{ url_for('get_image_post', id=image.id) }}">
+                            <img
+                                src="/static/images/placeholder.jpg"
+                                data-src="{{ url_for('get_thumbnail', id=image.id) }}"
+                                style="max-width: 200px; max-height: 200px;"
+                                loading="lazy" class="lazy-load"
+                            >
+                        </a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
 
     {% if images.pages > 0 %}

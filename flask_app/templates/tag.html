@@ -5,21 +5,38 @@
 {% block styles %}
 <link href="//code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" rel="Stylesheet"></link>
 
-<style>
-    .gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 10px;
-        padding: 10px;
-        max-width: 1000px;
-        width: 100%;
-    }
-    .gallery img {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-</style>
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const lazyLoadImages = document.querySelectorAll(".lazy-load");
+
+        if ("IntersectionObserver" in window) {
+            let imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove("lazy-load");
+                        observer.unobserve(img);
+                    }
+                });
+            });
+
+            lazyLoadImages.forEach((img) => {
+                imageObserver.observe(img);
+            });
+        } else {
+            // Fallback for browsers that do not support IntersectionObserver
+            lazyLoadImages.forEach((img) => {
+                img.src = img.dataset.src;
+                img.classList.remove("lazy-load");
+            });
+        }
+    });
+</script>
+
+<!-- CSS Styling -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/wrap-list.css') }}">
 
 {% endblock %}
 
@@ -52,27 +69,22 @@
     {% endif %}
 
     <div class="images-container">
-        <table class="images-table">
-            <tbody>
-                {% for image_batch in images | batch(4) %}
-                    <tr class="images-row">
-                        {% for image in image_batch %}
-                            <td class="image-cell">
-                                <div class="image-post" style="display: flex; align-items: center; justify-content: center;">
-                                    <a href="{{ url_for('get_image_post', id=image.id) }}">
-                                        <img
-                                            src="{{ url_for('get_thumbnail', id=image.id) }}"
-                                            style="max-width: 200px; max-height: 200px; padding: 5px;"
-                                            loading="lazy"
-                                        >
-                                    </a>
-                                </div>
-                            </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <ul class="wrap-list">
+            {% for image in images %}
+                <li>
+                    <div class="image-post" style="display: flex; align-items: center; justify-content: center;">
+                        <a href="{{ url_for('get_image_post', id=image.id) }}">
+                            <img
+                                src="/static/images/placeholder.jpg"
+                                data-src="{{ url_for('get_thumbnail', id=image.id) }}"
+                                style="max-width: 200px; max-height: 200px;"
+                                loading="lazy" class="lazy-load"
+                            >
+                        </a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
 
     {% if images.pages > 0 %}
