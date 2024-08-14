@@ -92,7 +92,6 @@
         });
 
         if (selectedOptions.length > 0) {
-            alert("You chose: " + selectedOptions.join(", "));
 
             // Convert selected options to parseable string
             selectedOptions = selectedOptions.join(",");
@@ -103,12 +102,12 @@
                 deleteUrl = "{{ url_for('remove_tags', id=image_stats.id, delete=true) | safe }}";
                 deleteUrl = deleteUrl + `&tags=${selectedOptions}`;
                 window.location.href = deleteUrl;
-                alert("Tags Deleted");
+                console.log("Tags deleted: " + selectedOptions.join(", "));
             } else {
                 deleteUrl = "{{ url_for('remove_tags', id=image_stats.id, delete=false) | safe }}";
                 deleteUrl = deleteUrl + `&tags=${selectedOptions}`;
-                console.log(deleteUrl);
-                alert("Tag(s) Removed");
+                window.location.href = deleteUrl;
+                console.log("Tags removed: " + selectedOptions.join(", "));
             }
         } else {
             alert("No options selected");
