@@ -155,26 +155,29 @@ def tag_suggestions():
 @app.route("/tags/add/<int:image_id>", methods=["POST"])
 def add_tag_to_image(image_id):
     image = Image.query.get_or_404(image_id)
+    
+    new_tag_names = request.form.get("new_tag", "").split(",")
+    for new_tag_name in new_tag_names:
+        # Sanitize input
+        new_tag_name = new_tag_name.strip().replace(" ", "_")
 
-    new_tag_name = request.form.get("new_tag", "").strip()
-    new_tag_name = new_tag_name.replace(" ", "_")
+        if new_tag_name:
+            tag = Tag.query.filter_by(name=new_tag_name).first()
 
-    if new_tag_name:
-        tag = Tag.query.filter_by(name=new_tag_name).first()
+            if not tag:
+                # Add new tag to database
+                tag = Tag(name=new_tag_name)
+                db.session.add(tag)
+                app.logger.info(f"New tag created: {new_tag_name}.")
 
-        if not tag:
-            # Add new tag to database
-            tag = Tag(name=new_tag_name)
-            db.session.add(tag)
+            if tag not in image.tags:
+                # Add tag to image if not on image already.
+                image.tags.append(tag)
+                app.logger.info(f"Tag <{new_tag_name}> added to image id <{image_id}>.")
+            else:
+                app.logger.warning(f"Tag <{new_tag_name}> already exists for image id <{image_id}>.")
 
-        if tag not in image.tags:
-            # Add tag to image if not on image already.
-            image.tags.append(tag)
-            app.logger.info(f"New tag <{new_tag_name}> added for image id <{image_id}>.")
-        else:
-            app.logger.warning(f"Tag <{new_tag_name}> already exists for image id <{image_id}>.")
-
-        db.session.commit()
+            db.session.commit()
     
     return redirect(url_for("get_image_post", id=image_id))
 

@@ -35,8 +35,13 @@
                 </li>
             {% endfor %}
             <form action="{{ url_for('add_tag_to_image', image_id=image_stats.id) }}" method="post">
-                <input type="text" id="new_tag" name="new_tag" required>
-                <button type="submit">Add Tag</button>
+                <input
+                    type="text"
+                    id="new_tag" name="new_tag"
+                    required placeholder='Separate multiple tags with a comma'
+                    size="30"
+                >
+                <button type="submit">Add Tag(s)</button>
             </form>
             <div class="delete-button-container" id="delete-button-container" style="display: none;">
                 <button class="delete-button" onclick="confirmDeleteTags()">Remove Tag(s)</button>
@@ -156,7 +161,7 @@
                 inputParts[inputParts.length - 1] = ui.item.value.split(" ")[0];
                 // inputParts.pop();
 
-                $(this).val(inputParts.join(" ") + " ");
+                $(this).val(inputParts.join(" ") + ", ");
                 // return false;
             }
         });
