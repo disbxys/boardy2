@@ -47,7 +47,7 @@ def index():
         .order_by(Image.id.desc())\
         .paginate(page=page, per_page=PER_PAGE)
 
-    return render_template("index.html", images=images, keyword=search_string)
+    return render_template("index.html", images=images, keyword=search_string, current_page=page)
 
 
 @app.route("/delete/<int:id>", methods=["GET", "DELETE"])
@@ -134,7 +134,7 @@ def tags_index():
 
     tags = query.order_by(Tag.name).all()
 
-    return render_template("tags_index.html", tags=tags)
+    return render_template("tags_index.html", tags=tags, current_letter=letter)
 
 
 @app.route("/tags/suggestions")
@@ -195,7 +195,7 @@ def get_images_by_tag(name: str):
     
     images = query.paginate(page=page, per_page=PER_PAGE)
 
-    return render_template("tag.html", title=title, tag=tag, images=images)
+    return render_template("tag.html", title=title, tag=tag, images=images, current_page=page)
 
 
 @app.route("/tags/delete", methods=["DELETE", "GET"])

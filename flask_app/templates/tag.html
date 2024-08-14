@@ -35,7 +35,11 @@
         
         {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
             {% if page_num %}
-            <a href="{{ url_for('get_images_by_tag', name=tag.name, page=page_num) }}">{{ page_num }}</a>
+                {% if current_page == page_num %}
+                    {{ page_num }}
+                {% else %}
+                    <a href="{{ url_for('get_images_by_tag', name=tag.name, page=page_num) }}">{{ page_num }}</a>
+                {% endif %}
             {% else %}
             ...
             {% endif %}
@@ -79,7 +83,11 @@
 
         {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
             {% if page_num %}
-            <a href="{{ url_for('get_images_by_tag', name=tag.name, page=page_num) }}">{{ page_num }}</a>
+                {% if current_page == page_num %}
+                    {{ page_num }}
+                {% else %}
+                    <a href="{{ url_for('get_images_by_tag', name=tag.name, page=page_num) }}">{{ page_num }}</a>
+                {% endif %}
             {% else %}
             ...
             {% endif %}

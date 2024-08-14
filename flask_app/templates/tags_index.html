@@ -35,11 +35,20 @@
     <div class="pagination" style="text-align: center;">
         {% set letters = ".ABCDEFGHIJKLMNOPQRSTUVWXYZ" %}
         {% for letter in letters %}
-            {% if letter == "." %}
-                <a class="page-letter" href="{{ url_for('tags_index', letter=letter) }}">#</a>
+            {% if current_letter == letter %}
+                {% if letter == "." %}
+                    #
+                {% else %}
+                    {{ letter }}
+                {% endif %}
             {% else %}
-                <a class="page-letter" href="{{ url_for('tags_index', letter=letter) }}">{{ letter }}</a>
+                {% if letter == "." %}
+                    <a class="page-letter" href="{{ url_for('tags_index', letter=letter) }}">#</a>
+                {% else %}
+                    <a class="page-letter" href="{{ url_for('tags_index', letter=letter) }}">{{ letter }}</a>
+                {% endif %}
             {% endif %}
+
         {% endfor %}
     </div>
 
@@ -58,11 +67,20 @@
     <div class="pagination" style="text-align: center;">
         {% set letters = ".ABCDEFGHIJKLMNOPQRSTUVWXYZ" %}
         {% for letter in letters %}
-            {% if letter == "." %}
-                <a class="page-letter" href="{{ url_for('tags_index', letter=letter) }}">#</a>
+            {% if current_letter == letter %}
+                {% if letter == "." %}
+                    #
+                {% else %}
+                    {{ letter }}
+                {% endif %}
             {% else %}
-                <a class="page-letter" href="{{ url_for('tags_index', letter=letter) }}">{{ letter }}</a>
+                {% if letter == "." %}
+                    <a class="page-letter" href="{{ url_for('tags_index', letter=letter) }}">#</a>
+                {% else %}
+                    <a class="page-letter" href="{{ url_for('tags_index', letter=letter) }}">{{ letter }}</a>
+                {% endif %}
             {% endif %}
+
         {% endfor %}
     </div>
 </div>

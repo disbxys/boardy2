@@ -50,23 +50,27 @@
     {% endif %}
 
     {% if images.pages > 0 %}
-    <div class="pagination" style="text-align: center;">
-        {% if images.has_prev %}
-        <a href="{{ url_for('index', tags=keyword, page=images.prev_num) }}">Previous</a>
-        {% endif %}
-        
-        {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-            {% if page_num %}
-            <a href="{{ url_for('index', tags=keyword, page=page_num) }}">{{ page_num }}</a>
-            {% else %}
-            ...
+        <div class="pagination" style="text-align: center;">
+            {% if images.has_prev %}
+                <a href="{{ url_for('index', tags=keyword, page=images.prev_num) }}">Previous</a>
             {% endif %}
-        {% endfor %}
+            
+            {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if current_page == page_num %}
+                        {{ page_num }}
+                    {% else %}
+                        <a href="{{ url_for('index', tags=keyword, page=page_num) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    ...
+                {% endif %}
+            {% endfor %}
 
-        {% if images.has_next %}
-        <a href="{{ url_for('index', tags=keyword, page=images.next_num) }}">Next</a>
-        {% endif %}
-    </div>
+            {% if images.has_next %}
+                <a href="{{ url_for('index', tags=keyword, page=images.next_num) }}">Next</a>
+            {% endif %}
+        </div>
     {% endif %}
 
     <div class="images-container">
@@ -95,23 +99,27 @@
     </div>
 
     {% if images.pages > 0 %}
-    <div class="pagination" style="text-align: center;">
-        {% if images.has_prev %}
-        <a href="{{ url_for('index', tags=keyword, page=images.prev_num) }}">Previous</a>
-        {% endif %}
-        
-        {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-            {% if page_num %}
-            <a href="{{ url_for('index', tags=keyword, page=page_num) }}">{{ page_num }}</a>
-            {% else %}
-            ...
+        <div class="pagination" style="text-align: center;">
+            {% if images.has_prev %}
+                <a href="{{ url_for('index', tags=keyword, page=images.prev_num) }}">Previous</a>
             {% endif %}
-        {% endfor %}
+            
+            {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if current_page == page_num %}
+                        {{ page_num }}
+                    {% else %}
+                        <a href="{{ url_for('index', tags=keyword, page=page_num) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% else %}
+                    ...
+                {% endif %}
+            {% endfor %}
 
-        {% if images.has_next %}
-        <a href="{{ url_for('index', tags=keyword, page=images.next_num) }}">Next</a>
-        {% endif %}
-    </div>
+            {% if images.has_next %}
+                <a href="{{ url_for('index', tags=keyword, page=images.next_num) }}">Next</a>
+            {% endif %}
+        </div>
     {% endif %}
 </div>
 
