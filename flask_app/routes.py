@@ -10,6 +10,7 @@ from flask import (
     send_from_directory, url_for
 )
 from PIL import Image as PILImage
+import werkzeug.datastructures.file_storage as werkzeug_fs
 
 from flask_app import app
 from flask_app.models import db, Image, image_tag, Tag
@@ -91,8 +92,9 @@ def get_image(id):
 def get_thumbnail(id):
     image = get_image_from_db(id)
 
-    thumbnail_dir = get_thumbnail_dir(image.filename)
-    thumbnail_filename = create_thumbnail_filename(image.filename)
+    thumbnail_path = get_thumbnail_filepath(image.filename)
+
+    thumbnail_dir, thumbnail_filename = os.path.split(thumbnail_path)
 
     return send_from_directory(thumbnail_dir, thumbnail_filename)
 
@@ -283,24 +285,18 @@ def upload_file():
                     app.logger.warning(f"ImageExistsError: {file.filename}")
                     continue
 
-                # Save image to filesystem
-                os.makedirs(image_dir, exist_ok=True)
-                file.seek(0)    # reset seek header
-                # file.save(os.path.join(save_path, new_filename))
-                with open(save_path, "wb") as outfile:
-                    while True:
-                        chunk = file.stream.read(8192)
-                        if not chunk:
-                            break
-                        outfile.write(chunk)
+                # Save stream to file
+                stream_to_file(file, save_path)
                 app.logger.info(f"New image saved to database: {new_filename}")
 
                 # Generate a thumbnail
-                thumbnail_dir = get_thumbnail_dir(new_filename)
-                os.makedirs(thumbnail_dir, exist_ok=True)
-                thumbnail_filename = f"sample_{new_filename}"
-                thumbnail_path = os.path.join(thumbnail_dir, thumbnail_filename)
-                create_thumbnail(save_path, thumbnail_path, video = is_video)
+                thumbnail_path = get_thumbnail_filepath(new_filename)
+                os.makedirs(
+                    os.path.dirname(thumbnail_path),
+                    exist_ok=True
+                )
+                create_thumbnail(save_path, video = is_video)
+                app.logger.info(f"Thumbnail generated for database image: {new_filename}")
 
                 ####
                 image = Image(filename=new_filename, is_video=is_video)
@@ -315,6 +311,23 @@ def upload_file():
 
         return redirect(url_for("index"))
     return render_template("upload.html")
+
+
+def stream_to_file(file: werkzeug_fs.FileStorage, save_path: str):
+    # Ensure directory to write file to exists
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+    # Reset seek header in case it has already been used.
+    file.stream.seek(0)
+
+    # Write stream to file in chunks to save resources on
+    # large files.
+    with open(save_path, "wb") as outfile:
+        while True:
+            chunk = file.stream.read(8192)
+            if not chunk:
+                break
+            outfile.write(chunk)
 
 
 def get_image_from_db(id: int) -> Image:
@@ -336,24 +349,6 @@ def get_image_dir(filename: str) -> str:
         app.config["UPLOAD_FOLDER"],
         f"{filename[:2]}/{filename[2:4]}"
     ))
-
-
-def get_thumbnail_dir(filename: str) -> str:
-    return os.path.normpath(os.path.join(
-        app.config["THUMBNAIL_FOLDER"],
-        f"{filename[:2]}/{filename[2:4]}"
-    ))
-
-
-def get_thumbnail_filepath(image_filename: str) -> str:
-    return os.path.normpath(os.path.join(
-        get_thumbnail_dir(image_filename),
-        f"sample_{os.path.splitext(image_filename)[0]}.jpg"
-    ))
-
-
-def create_thumbnail_filename(filename: str) -> str:
-    return f"sample_{os.path.splitext(filename)[0]}.jpg"
 
 
 def translate_mimetype_to_ext(mtype: str) -> str:
@@ -445,21 +440,40 @@ def is_video_file(file):
     return mime_type.startswith("video/"), mime_type
 
 
-def create_thumbnail(input_path: str, output_path: str, video: bool, max_size = (650, 650)):
-    thumbnail_filename_stem, _ = os.path.splitext(os.path.basename(output_path))
-    if "sample_" in thumbnail_filename_stem:
-        thumbnail_filename = f"{thumbnail_filename_stem}.jpg"
-    else:
-        thumbnail_filename = f"sample_{thumbnail_filename_stem}.jpg"
+def get_thumbnail_dir(filename: str) -> str:
+    """
+    This function assumes that filename is only the filename
+    and not the full filepath.
+    """
+    return os.path.normpath(os.path.join(
+        app.config["THUMBNAIL_FOLDER"],
+        f"{filename[:2]}/{filename[2:4]}"
+    ))
 
-    output_path = os.path.join(os.path.dirname(output_path), thumbnail_filename)
+
+def get_thumbnail_filepath(image_filename: str) -> str:
+    """
+    This function assumes that image_filename is only the filename
+    and not the full filepath.
+    """
+    return os.path.normpath(os.path.join(
+        get_thumbnail_dir(image_filename),
+        f"sample_{os.path.splitext(image_filename)[0]}.jpg"
+    ))
+
+
+def create_thumbnail(input_path: str, video: bool, max_size = (650, 650)):
+    thumbnail_path = get_thumbnail_filepath(os.path.basename(input_path))
+
+    # Ensure thumbnail directory exists
+    os.makedirs(os.path.dirname(thumbnail_path), exist_ok=True)
 
     if video is True:
-        create_thumbnail_from_video(input_path, output_path)
+        create_thumbnail_from_video(input_path, thumbnail_path)
     else:
         with PILImage.open(input_path) as img:
             img.thumbnail(max_size)
-            img.convert("RGB").save(output_path)
+            img.convert("RGB").save(thumbnail_path)
 
 
 def create_thumbnail_from_video(input_path: str, output_path: str):
