@@ -21,8 +21,15 @@ PER_PAGE = 42
 
 @app.route("/")
 def index():
-    page = request.args.get("page", 1, type=int)
+    page_num = request.args.get("page", 0, type=int)
     search_string = request.args.get("tags", "")
+
+    if page_num == 0:
+        page = 1
+        is_home = 1
+    else:
+        page = page_num
+        is_home = False
 
     # All keywords in the search string must be valid tags
     keywords = [x.strip() for x in search_string.split() if x.strip() != ""]
@@ -48,7 +55,13 @@ def index():
         .order_by(Image.id.desc())\
         .paginate(page=page, per_page=PER_PAGE)
 
-    return render_template("index.html", images=images, keyword=search_string, current_page=page)
+    return render_template(
+        "index.html",
+        images = images,
+        keyword = search_string,
+        current_page = page,
+        is_home = is_home
+    )
 
 
 @app.route("/delete/<int:id>", methods=["GET", "DELETE"])

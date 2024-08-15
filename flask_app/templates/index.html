@@ -43,7 +43,7 @@
 {% block content %}
 <div class="content">
 
-    {% if images.total > 0 %}
+    {% if images.total > 0 and not is_home %}
     <div class="search-results-count" style="text-align: center;">
         <h2>({{ images.total }}) results</h2>
     </div>
