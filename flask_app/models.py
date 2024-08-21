@@ -14,12 +14,27 @@ image_tag = db.Table(
 )
 
 
+class Category(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.String, nullable=True)
+    tags = db.relationship("Tag", backref="category")
+
+    def __repr__(self) -> str:
+        return f"Category <{self.name}> - {self.description[:20]}"
+    
+
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.String, nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"), nullable=True)
 
     def __repr__(self) -> str:
-        return f"Tag <{self.name}>"
+        if self.category_id is not None:
+            return f"Tag <{self.category.name}:{self.name}> - {self.description[:20]}"
+        else:
+            return f"Tag <{self.name}> - {self.description[:20]}"
 
 
 class Image(db.Model):

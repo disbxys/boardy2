@@ -197,7 +197,7 @@ def add_tag_to_image(image_id):
     return redirect(url_for("get_image_post", id=image_id))
 
 
-@app.route("/tags/<string:name>")
+@app.route("/tags/<string:name>/images")
 def get_images_by_tag(name: str):
     page = request.args.get("page", 1, type=int)
 
@@ -214,6 +214,13 @@ def get_images_by_tag(name: str):
     images = query.paginate(page=page, per_page=PER_PAGE)
 
     return render_template("tag.html", title=title, tag=tag, images=images, current_page=page)
+
+
+@app.route("/tags/<string:name>")
+def get_tag_info(name: str):
+    tag = Tag.query.filter_by(name=name).first_or_404()
+
+    return render_template("tag_info.html", tag=tag)
 
 
 @app.route("/tags/delete", methods=["DELETE", "GET"])
@@ -243,6 +250,19 @@ def remove_tags():
     db.session.commit()
 
     return redirect(url_for("get_image_post", id=image_id))
+
+
+@app.route("/tags/<int:id>/delete", methods=["DELETE", "GET"])
+def delete_tag(id: int):
+    """Delete tag from database."""
+
+    tag = Tag.query.filter_by(id=id).first_or_404()
+
+    db.session.delete(tag)
+
+    db.session.commit()
+
+    return redirect(url_for("index"))
 
 
 @app.route("/upload", methods=["GET", "POST"])
