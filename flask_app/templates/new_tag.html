@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}New Tag{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h1>Tag Creation</h1>
+
+    <form method=post enctype=multipart/form-data action="{{ url_for('create_tag') }}">
+        <div class="tag-name tag-input">
+            <label for="name" >Name: </label>
+            <input type="text" name="name" required />
+        </div>
+        <div class="tag-category tag-input">
+            <label for="category" >Category: </label>
+            <input type="text" name="category" list="category-list" />
+            <datalist id="category-list">
+                {% for category in categories %}
+                <option value="{{ category.name }}"></option>
+                {% endfor %}
+            </datalist>
+        </div>
+        <div class="tag-descrption">
+            <textarea
+                name="description"
+                cols="40" rows="10"
+                placeholder="Enter description..."
+                style="resize: vertical;"
+            ></textarea>
+        </div>
+        <br/>
+        <input type=submit value=Submit>
+    </form>
+</div>
+
+{% endblock %}

@@ -21,7 +21,7 @@ class Category(db.Model):
     tags = db.relationship("Tag", backref="category")
 
     def __repr__(self) -> str:
-        return f"Category <{self.name}> - {self.description[:20]}"
+        return f"Category <{self.name}>"
     
 
 class Tag(db.Model):
@@ -32,9 +32,9 @@ class Tag(db.Model):
 
     def __repr__(self) -> str:
         if self.category_id is not None:
-            return f"Tag <{self.category.name}:{self.name}> - {self.description[:20]}"
+            return f"Tag <{self.category.name}:{self.name}>"
         else:
-            return f"Tag <{self.name}> - {self.description[:20]}"
+            return f"Tag <{self.name}>"
 
 
 class Image(db.Model):

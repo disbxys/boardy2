@@ -31,6 +31,11 @@
 
 {% block content %}
 <div class="content">
+    <div style="margin-top: 10px;">
+        <button type="button" onclick="location.href='{{ url_for('create_tag') }}'">
+            New Tag
+        </button>
+    </div>
 
     <div class="pagination" style="text-align: center;">
         {% set letters = ".ABCDEFGHIJKLMNOPQRSTUVWXYZ" %}

@@ -13,7 +13,7 @@ from PIL import Image as PILImage
 import werkzeug.datastructures.file_storage as werkzeug_fs
 
 from flask_app import app
-from flask_app.models import db, Image, image_tag, Tag
+from flask_app.models import Category, db, Image, image_tag, Tag
 
 
 PER_PAGE = 42
@@ -223,6 +223,66 @@ def get_tag_info(name: str):
     return render_template("tag_info.html", tag=tag)
 
 
+@app.route("/tags/new", methods=["POST", "GET"])
+def create_tag():
+    if request.method == "POST":
+        tag_name = request.form.get("name", type=str)
+        category_name = request.form.get("category", None, type=str)
+        tag_description = request.form.get("description", None, type=str)
+
+        category: Category | None
+        if (category_name is not None) and (category_name.strip() != ""):
+            # Sanitize category name input
+            category_name = category_name.strip().lower()
+
+            category = Category.query.filter_by(name=category_name).first()
+            if category is None:
+                # Add category to database
+                new_category = Category(name=category_name)
+                db.session.add(new_category)
+                app.logger.info(f"New category created: {new_category.name}.")
+            
+        # This SHOULD NEVER be None
+        category = Category.query.filter_by(name=category_name).first()
+        
+        if (tag_description is None) or (tag_description.strip() == ""):
+            tag_description = None 
+        else:
+            tag_description.strip()
+
+        new_tag_name = tag_name.strip().replace(" ", "_")
+        
+        # Check if tag does not already exist
+        tag: Tag | None = Tag.query.filter_by(name=new_tag_name).first()
+
+        if tag is None:
+            # Add tag to database
+            tag = Tag(
+                name = new_tag_name,
+                description = tag_description,
+                category = category
+            )
+
+            db.session.add(tag)
+            app.logger.info(f"New tag created: {category.name+':' if category else ''}{tag.name}")
+
+        else:
+            if category is not None:
+                # Add category to tag
+                tag.category_id = category.id
+
+
+
+        db.session.commit()
+
+        return redirect(url_for("tags_index"))
+
+    categories = Category.query.all()
+
+    return render_template("new_tag.html", categories=categories)
+
+
+
 @app.route("/tags/delete", methods=["DELETE", "GET"])
 def remove_tags():
     """
@@ -262,7 +322,7 @@ def delete_tag(id: int):
 
     db.session.commit()
 
-    return redirect(url_for("index"))
+    return redirect(url_for("tags_index"))
 
 
 @app.route("/upload", methods=["GET", "POST"])
