@@ -4,16 +4,16 @@
 
 {% block content %}
 <div class="content">
-    <h1>Tag Creation</h1>
+    <h1>Tag Editor</h1>
 
     <form method=post enctype=multipart/form-data action="{{ url_for('create_tag') }}">
         <div class="tag-name tag-input">
             <label for="name" >Name: </label>
-            <input type="text" name="name" required />
+            <input type="text" name="name" value="{{ tag.name }}" required />
         </div>
         <div class="tag-category tag-input">
             <label for="category" >Category: </label>
-            <input type="text" name="category" list="category-list" />
+            <input type="text" name="category" value="{{ tag.category.name }}" list="category-list" />
             <datalist id="category-list">
                 {% for category in categories %}
                 <option value="{{ category.name }}"></option>
@@ -26,10 +26,11 @@
                 cols="40" rows="10"
                 placeholder="Enter description..."
                 style="resize: vertical;"
-            ></textarea>
+            >{{ tag.description }}</textarea>
         </div>
         <br/>
-        <input type=submit value=Submit>
+        <input type=submit value="Save" />
+        <input type="button" value="Cancel" onclick="location.href='{{ url_for('tags_index') }}'" />
     </form>
 </div>
 

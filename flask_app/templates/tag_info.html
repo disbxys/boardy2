@@ -6,9 +6,9 @@
 <div class="content">
     <div style="text-align: center; margin: 10px;">
         <h1 style="margin: auto;">{{ tag.name | replace("_", " ") | title }}</h1>
-        {% if tag.category_id %}
-            <span><strong>{{ tag.category.name }}</strong></span>
-        {% endif %}
+        <span><strong>{{ tag.category.name }}</strong></span>
+        <br />
+        <span><a href="{{ url_for('edit_tag', id=tag.id) }}">edit</a></span>
     </div>
 
     {% if tag.description %}

@@ -278,9 +278,17 @@ def create_tag():
         return redirect(url_for("tags_index"))
 
     categories = Category.query.all()
+    tag_id = request.args.get("tag_id", type=int)
+    tag = Tag.query.filter_by(id=tag_id).first_or_404()
 
-    return render_template("new_tag.html", categories=categories)
+    return render_template("new_tag.html", categories=categories, tag=tag)
 
+
+@app.route("/tags/<int:id>/edit", methods=["GET"])
+def edit_tag(id: int):
+    tag = Tag.query.filter_by(id=id).first_or_404()
+
+    return redirect(url_for("create_tag", tag_id=tag.id))
 
 
 @app.route("/tags/delete", methods=["DELETE", "GET"])
