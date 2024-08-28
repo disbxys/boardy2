@@ -183,14 +183,14 @@ def add_tag_to_image(image_id):
                 # Add new tag to database
                 tag = Tag(name=new_tag_name)
                 db.session.add(tag)
-                app.logger.info(f"New tag created: {new_tag_name}.")
+                app.logger.info(f"New <Tag> created: '{new_tag_name}'.")
 
             if tag not in image.tags:
                 # Add tag to image if not on image already.
                 image.tags.append(tag)
-                app.logger.info(f"Tag <{new_tag_name}> added to image id <{image_id}>.")
+                app.logger.info(f"<Tag> '{new_tag_name}' added to <Image> id '{image_id}'.")
             else:
-                app.logger.warning(f"Tag <{new_tag_name}> already exists for image id <{image_id}>.")
+                app.logger.warning(f"<Tag> '{new_tag_name}' already exists for <Image> id '{image_id}'.")
 
             db.session.commit()
     
@@ -240,7 +240,7 @@ def create_tag():
                 # Add category to database
                 new_category = Category(name=category_name)
                 db.session.add(new_category)
-                app.logger.info(f"New category created: {new_category.name}.")
+                app.logger.info(f"New <Category> created: {new_category.name}.")
             
         # This SHOULD NEVER be None
         category = Category.query.filter_by(name=category_name).first()
@@ -264,14 +264,12 @@ def create_tag():
             )
 
             db.session.add(tag)
-            app.logger.info(f"New tag created: {category.name+':' if category else ''}{tag.name}")
+            app.logger.info(f"New <Tag> created: '{category.name+':' if category else ''}{tag.name}'")
 
         else:
             if category is not None:
                 # Add category to tag
                 tag.category_id = category.id
-
-
 
         db.session.commit()
 
@@ -359,7 +357,7 @@ def upload_file():
                 db.session.add(metadata_category)
                 db.session.commit()
 
-                app.logger.info("New Category saved in database: 'metadata'.")
+                app.logger.info("New <Category> saved in database: 'metadata'.")
                 
                 # This extra step is needed in order to get the correct id for
                 # the 'metadata' category to assign to the 'video' tag.
@@ -367,7 +365,7 @@ def upload_file():
                 metadata_category = db.session.query(Category).filter_by(name="metadata").first()
                 print(metadata_category)
                 if metadata_category is None:
-                    raise Exception("Category 'metadata' should exist in database but is not found.")
+                    raise Exception("<Category> 'metadata' should exist in database but is not found.")
 
             # Create 'video' tag if it does not exist.
             video_tag = db.session.query(Tag).filter_by(name="video").first()
@@ -377,7 +375,7 @@ def upload_file():
                 db.session.add(video_tag)
                 db.session.commit()
 
-                app.logger.info("New Tag saved in database: 'metadata'.")
+                app.logger.info("New <Tag> saved in database: 'metadata'.")
 
             # Ensure category id for 'metadata' category is assigned to the 'video' tag.
             if (video_tag.category_id is None) or (video_tag.category_id != metadata_category.id):
@@ -420,7 +418,7 @@ def upload_file():
 
                 # Save stream to file
                 stream_to_file(file, save_path)
-                app.logger.info(f"New image saved to database: {new_filename}")
+                app.logger.info(f"New <Image> saved to database: {new_filename}")
 
                 # Generate a thumbnail
                 thumbnail_path = get_thumbnail_filepath(new_filename)
