@@ -351,9 +351,41 @@ def upload_file():
             if not general_tag:
                 general_tag = Tag(name="general")
 
-            video_tag = Tag.query.filter_by(name="video").first()
-            if not video_tag:
-                video_tag = Tag(name="video")
+            # Create 'metadata' category if it does not exist
+            metadata_category = Category.query.filter_by(name="metadata").first()
+            if metadata_category is None:
+                metadata_category = Category(name="metadata")
+
+                db.session.add(metadata_category)
+                db.session.commit()
+
+                app.logger.info("New Category saved in database: 'metadata'.")
+                
+                # This extra step is needed in order to get the correct id for
+                # the 'metadata' category to assign to the 'video' tag.
+                # Try querying from database again.
+                metadata_category = db.session.query(Category).filter_by(name="metadata").first()
+                print(metadata_category)
+                if metadata_category is None:
+                    raise Exception("Category 'metadata' should exist in database but is not found.")
+
+            # Create 'video' tag if it does not exist.
+            video_tag = db.session.query(Tag).filter_by(name="video").first()
+            if video_tag is None:
+                video_tag = Tag(name="video", category_id=metadata_category.id)
+
+                db.session.add(video_tag)
+                db.session.commit()
+
+                app.logger.info("New Tag saved in database: 'metadata'.")
+
+            # Ensure category id for 'metadata' category is assigned to the 'video' tag.
+            if (video_tag.category_id is None) or (video_tag.category_id != metadata_category.id):
+                video_tag.category_id = metadata_category.id
+
+                db.session.commit()
+
+                app.logger.info("Category assigned to Tag 'video': 'metadata'.")
 
             files_saved = list()
             for file in files:
