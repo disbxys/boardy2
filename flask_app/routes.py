@@ -6,7 +6,7 @@ from typing import List
 
 import cv2
 from flask import (
-    abort, jsonify, redirect, render_template, request,
+    abort, flash, jsonify, redirect, render_template, request,
     send_from_directory, url_for
 )
 from PIL import Image as PILImage
@@ -251,12 +251,10 @@ def create_tag():
             tag_description.strip()
 
         new_tag_name = tag_name.strip().replace(" ", "_")
-        
-        # Check if tag does not already exist
-        tag: Tag | None = Tag.query.filter_by(name=new_tag_name).first()
 
+        tag = db.session.query(Tag).filter_by(name=new_tag_name).first()
         if tag is None:
-            # Add tag to database
+            # referred_tag_id is None or referred_tag_id not in database; create a new tag.
             tag = Tag(
                 name = new_tag_name,
                 description = tag_description,
@@ -267,26 +265,80 @@ def create_tag():
             app.logger.info(f"New <Tag> created: '{category.name+':' if category else ''}{tag.name}'")
 
         else:
-            if category is not None:
-                # Add category to tag
-                tag.category_id = category.id
+            flash("A tag with the name <{}> already exists.".format(tag.name))
 
         db.session.commit()
 
         return redirect(url_for("tags_index"))
 
     categories = Category.query.all()
-    tag_id = request.args.get("tag_id", type=int)
-    tag = Tag.query.filter_by(id=tag_id).first_or_404()
 
-    return render_template("new_tag.html", categories=categories, tag=tag)
+    return render_template(
+        "tag_editor.html",
+        action_url = url_for("create_tag"),
+        categories = categories,
+        tag_name = "",
+        tag_description = "",
+        tag_category_name = ""
+    )
 
 
-@app.route("/tags/<int:id>/edit", methods=["GET"])
+@app.route("/tags/<int:id>/edit", methods=["POST", "GET"])
 def edit_tag(id: int):
     tag = Tag.query.filter_by(id=id).first_or_404()
 
-    return redirect(url_for("create_tag", tag_id=tag.id))
+    if request.method == "POST":
+        tag_name = request.form.get("name", type=str)
+        category_name = request.form.get("category", None, type=str)
+        tag_description = request.form.get("description", None, type=str)
+
+        category: Category | None
+        if (category_name is not None) and (category_name.strip() != ""):
+            # Sanitize category name input
+            category_name = category_name.strip().lower()
+
+            category = Category.query.filter_by(name=category_name).first()
+            if category is None:
+                # Add category to database
+                new_category = Category(name=category_name)
+                db.session.add(new_category)
+                app.logger.info(f"New <Category> created: {new_category.name}.")
+            
+        # This SHOULD NEVER be None
+        category = Category.query.filter_by(name=category_name).first()
+        
+        if (tag_description is None) or (tag_description.strip() == ""):
+            tag_description = None 
+        else:
+            tag_description.strip()
+
+        new_tag_name = tag_name.strip().replace(" ", "_")
+
+        t_ = db.session.query(Tag).filter_by(name=new_tag_name).first()
+        if (t_) and (t_.id != tag.id):
+            # Tag w/ same name found and does not share the same tag id.
+            flash("A tag with the name <{}> already exists.".format(t_.name))
+        else:
+            tag.name = new_tag_name
+            tag.description = tag_description
+            tag.category = category
+
+            app.logger.info(f"<Tag> updated: '{category.name+':' if category else ''}{tag.name}'")
+        
+        db.session.commit()
+
+        return redirect(url_for("tags_index"))
+
+    categories = Category.query.all()
+
+    return render_template(
+        "tag_editor.html",
+        action_url = url_for("edit_tag", id=id),
+        categories = categories,
+        tag_name = tag.name,
+        tag_description = "" if tag.description is None else tag.description,
+        tag_category_name = tag.category.name
+    )
 
 
 @app.route("/tags/delete", methods=["DELETE", "GET"])
@@ -363,7 +415,7 @@ def upload_file():
                 # the 'metadata' category to assign to the 'video' tag.
                 # Try querying from database again.
                 metadata_category = db.session.query(Category).filter_by(name="metadata").first()
-                print(metadata_category)
+                
                 if metadata_category is None:
                     raise Exception("<Category> 'metadata' should exist in database but is not found.")
 

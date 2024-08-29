@@ -26,11 +26,22 @@
         border-radius: 5px;
         text-align: left;
     }
+    .alert {
+        text-align: center;
+        border-width: 5px;
+        background-color: #eee483;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="content">
+    {% for message in get_flashed_messages() %}
+        <div class="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+
     <div style="margin-top: 10px;">
         <button type="button" onclick="location.href='{{ url_for('create_tag') }}'">
             New Tag
