@@ -369,60 +369,78 @@ def upload_file():
 
                 app.logger.info("New <Tag> saved in database: metadata:video.")
 
-            files_saved = list()
-            for file in files:
-                #  Calculate file hash to use as new filename
-                file_hash = sha256_hash_image_data(file.stream.read())
+            saved_files = list()    # list of images saved to file
+            image_records = list()  # list of <Image> records to be saved to database
+            try:
+                for file in files:
+                    print(file.filename)
+                    #  Calculate file hash to use as new filename
+                    file_hash = sha256_hash_image_data(file.stream.read())
 
-                is_valid_upload, mimetype = is_image_file(file)
-                is_video = False
-                if is_valid_upload is False:
-                    is_valid_upload, mimetype = is_video_file(file)
-                    is_video = True
+                    is_valid_upload, mimetype = is_image_file(file)
+                    is_video = False
+                    if is_valid_upload is False:
+                        is_valid_upload, mimetype = is_video_file(file)
+                        is_video = True
 
-                # Enforce allowed file upload extensions
-                if not is_valid_upload: continue
+                    # Enforce allowed file upload extensions
+                    if not is_valid_upload: continue
 
-                # Create new filename using file hash and keep extension
-                file_ext = translate_mimetype_to_ext(mimetype).lower()
-                new_filename = f"{file_hash}.{file_ext}"
+                    # Create new filename using file hash and keep extension
+                    file_ext = translate_mimetype_to_ext(mimetype).lower()
+                    new_filename = f"{file_hash}.{file_ext}"
 
-                # Create a save path based on file hash
-                image_dir = get_image_dir(file_hash)
-                save_path = os.path.join(image_dir, new_filename)
+                    # Create a save path based on file hash
+                    image_dir = get_image_dir(file_hash)
+                    save_path = os.path.join(image_dir, new_filename)
 
-                # Do not process images already saved or duplicates
-                # It should be safe to assume that if the image does not
-                # exist in the file system then it also should not exist
-                # in the database. Therefore, we do not need to worry about
-                # UNIQUE filename constraint errors.
-                if os.path.exists(save_path):
-                    app.logger.warning(f"ImageExistsError: {file.filename}")
-                    continue
+                    # Do not process images already saved or duplicates
+                    # It should be safe to assume that if the image does not
+                    # exist in the file system then it also should not exist
+                    # in the database. Therefore, we do not need to worry about
+                    # UNIQUE filename constraint errors.
+                    if os.path.exists(save_path):
+                        app.logger.warning(f"ImageExistsError: {file.filename}")
+                        continue
 
-                # Save stream to file
-                stream_to_file(file, save_path)
-                app.logger.info(f"New <Image> saved to database: {new_filename}")
+                    # Save stream to file
+                    stream_to_file(file, save_path)
+                    app.logger.info(f"New <Image> saved to database: {new_filename}")
 
-                # Generate a thumbnail
-                thumbnail_path = get_thumbnail_filepath(new_filename)
-                os.makedirs(
-                    os.path.dirname(thumbnail_path),
-                    exist_ok=True
-                )
-                create_thumbnail(save_path, video = is_video)
-                app.logger.info(f"Thumbnail generated for database image: {new_filename}")
+                    saved_files.append(save_path)
 
-                ####
-                image = Image(filename=new_filename, is_video=is_video)
-                image.tags.append(general_tag)
-                if is_video:
-                    image.tags.append(video_tag)
+                    # Generate a thumbnail
+                    create_thumbnail(save_path, video = is_video)
+                    app.logger.info(f"Thumbnail generated for database image: {new_filename}")
 
-                files_saved.append(image)
+                    ####
+                    image = Image(filename=new_filename, is_video=is_video)
+                    image.tags.append(general_tag)
+                    if is_video:
+                        image.tags.append(video_tag)
 
-            db_session.add_all(files_saved)
-            db_session.commit()
+                    image_records.append(image)
+
+                db_session.add_all(image_records)
+                db_session.commit()
+
+            except Exception as e:
+                # Rollback the database transaction
+                db_session.rollback()
+
+                # Delete images already saved to file
+                for file_path in saved_files:
+                    # Delete image
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+
+                    # Delete thumbnails
+                    thumbnail_path = get_thumbnail_filepath(os.path.basename(file_path))
+                    if os.path.exists(thumbnail_path):
+                        os.remove(thumbnail_path)
+
+                app.logger.error("Error occurred: {}".format(str(e)))
+                return jsonify({"error": "Error occurred: {}".format(str(e))}), 500
 
         return redirect(url_for("index"))
     return render_template("upload.html")
