@@ -11,15 +11,6 @@
             <label for="name" >Name: </label>
             <input type="text" name="name" value="{{ tag_name }}" required />
         </div>
-        <div class="tag-category tag-input">
-            <label for="category" >Category: </label>
-            <input type="text" name="category" value="{{ tag_category_name }}" list="category-list" />
-            <datalist id="category-list">
-                {% for category in categories %}
-                <option value="{{ category.name }}"></option>
-                {% endfor %}
-            </datalist>
-        </div>
         <div class="tag-descrption">
             <textarea
                 name="description"
