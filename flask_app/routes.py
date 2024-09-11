@@ -416,7 +416,7 @@ def upload_file():
                 ####
                 image = Image(filename=new_filename, is_video=is_video)
                 image.tags.append(general_tag)
-                if is_video or file_ext == "gif":
+                if is_video:
                     image.tags.append(video_tag)
 
                 files_saved.append(image)
