@@ -82,12 +82,21 @@
                             <td class="image-cell">
                                 <div class="image-post" style="display: flex; align-items: center; justify-content: center;">
                                     <a href="{{ url_for('get_image_post', id=image.id) }}">
+                                        {% if image.is_video %}
+                                        <img
+                                            src="/static/images/placeholder.jpg"
+                                            data-src="{{ url_for('get_thumbnail', id=image.id) }}"
+                                            style="max-width: 200px; max-height: 200px; padding: 5px; border-style: solid; border-color: blue; border-width: thick;"
+                                            loading="lazy" class="lazy-load"
+                                        >
+                                        {% else %}
                                         <img
                                             src="/static/images/placeholder.jpg"
                                             data-src="{{ url_for('get_thumbnail', id=image.id) }}"
                                             style="max-width: 200px; max-height: 200px; padding: 5px;"
                                             loading="lazy" class="lazy-load"
                                         >
+                                        {% endif %}
                                     </a>
                                 </div>
                             </td>

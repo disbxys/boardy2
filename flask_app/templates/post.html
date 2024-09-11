@@ -10,7 +10,9 @@
         {% if image_stats.media_type == 'video' %}
             <video style="max-width: 600px;" controls>
                 <source
+                    poster="{{ url_for('get_thumbnail', id=image_stats.id) }}"
                     src="{{ url_for('get_image', id=image_stats.id) }}"
+                    preload="metadata"
                 >
             </video>
         {% else %}
