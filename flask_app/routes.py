@@ -354,13 +354,8 @@ def upload_file():
 
         with db.session.no_autoflush as db_session:
 
-            # temp: TODO: implement tag function
-            general_tag = Tag.query.filter_by(name="general").first()
-            if not general_tag:
-                general_tag = Tag(name="general")
-
             # Create 'video' tag if it does not exist.
-            video_tag = db.session.query(Tag).filter_by(name="video").first()
+            video_tag = db.session.query(Tag).filter_by(name="metadata:video").first()
             if video_tag is None:
                 video_tag = Tag(name="metadata:video")
 
@@ -415,7 +410,6 @@ def upload_file():
 
                     ####
                     image = Image(filename=new_filename, is_video=is_video)
-                    image.tags.append(general_tag)
                     if is_video:
                         image.tags.append(video_tag)
 
