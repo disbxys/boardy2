@@ -368,15 +368,21 @@ def upload_file():
             image_records = list()  # list of <Image> records to be saved to database
             try:
                 for file in files:
-                    print(file.filename)
-                    #  Calculate file hash to use as new filename
+                    # Calculate file hash to use as new filename
                     file_hash = sha256_hash_image_data(file.stream.read())
 
+                    # Check if is a valid image file
                     is_valid_upload, mimetype = is_image_file(file)
                     is_video = False
                     if is_valid_upload is False:
+                        # Check if is a valid video file
                         is_valid_upload, mimetype = is_video_file(file)
-                        is_video = True
+                        is_video = is_valid_upload
+
+                        if is_valid_upload is False:
+                            # Neither valid image nor video file
+                            app.logger.warning(f"Invalid file found: {file.filename}")
+                            continue
 
                     # Enforce allowed file upload extensions
                     if not is_valid_upload: continue
@@ -541,9 +547,10 @@ def search_exact_tag(keyword: str) -> Tag:
     return Tag.query.filter_by(name=keyword).first_or_404()
 
 
-def is_image_file(file):
+def is_image_file(file: werkzeug_fs.FileStorage) -> tuple[bool, str]:
     """
-    Returns True if file is an image.
+    Returns a tuple where the first element is True if file
+    is an image; the second element is the file's mimetype.
 
     This relies on the accuracy of python magic.
     """
@@ -554,9 +561,10 @@ def is_image_file(file):
     return mime_type.startswith("image/"), mime_type
 
 
-def is_video_file(file):
+def is_video_file(file: werkzeug_fs.FileStorage) -> tuple[bool, str]:
     """
-    Returns True if file is an video.
+    Returns a tuple where the first element is True if file
+    is a video; the second element is the file's mimetype.
 
     This relies on the accuracy of python magic.
     """
