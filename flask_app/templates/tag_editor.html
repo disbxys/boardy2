@@ -11,7 +11,17 @@
             <label for="name" >Name: </label>
             <input type="text" name="name" value="{{ tag_name }}" required />
         </div>
-        <div class="tag-descrption">
+        <div class="tag-category tag-input">
+            <label for="category" >Category: </label>
+            <select name="category" required>
+                <option value="general"  {% if tag_category.value == "general" %} selected {% endif %}>general</option>
+                <option value="copyright" {% if tag_category.value == "copyright" %} selected {% endif %}>copyright</option>
+                <option value="character" {% if tag_category.value == "character" %} selected {% endif %}>character</option>
+                <option value="artist" {% if tag_category.value == "artist" %} selected {% endif %}>artist</option>
+                <option value="metadata" {% if tag_category.value == "metadata" %} selected {% endif %}>metadata</option>
+            </select>
+        </div>
+        <div class="tag-descrption tag-input">
             <textarea
                 name="description"
                 cols="40" rows="10"

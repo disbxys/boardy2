@@ -13,7 +13,7 @@ from PIL import Image as PILImage
 import werkzeug.datastructures.file_storage as werkzeug_fs
 
 from flask_app import app
-from flask_app.models import db, Image, image_tag, Tag
+from flask_app.models import TagCategory, db, Image, image_tag, Tag
 
 
 PER_PAGE = 42
@@ -40,6 +40,7 @@ def index():
         query = db.session.query(Image)
     elif len(keywords) != len(tags):
         # Not all keywords in the search string were valid tag names
+        # This should result in an empty list.
         query = db.session.query(Image).filter_by(id=None)
     else:
         # Create the start of the search query string
@@ -47,7 +48,7 @@ def index():
             .join(image_tag, image_tag.c.image_id == Image.id)\
             .join(Tag, Tag.id == image_tag.c.tag_id)
 
-        # Add an AND = clause for each tag
+        # Add an AND == clause for each tag
         for tag in tags:
             query = query.filter(Tag.name == tag.name)
 
@@ -128,7 +129,11 @@ def get_image_post(id):
 
             tag_info_list.append((tag, num_images))
 
-    return render_template("post.html", image_stats=image_stats, tags=tag_info_list)
+    return render_template(
+        "post.html",
+        image_stats = image_stats,
+        tags = tag_info_list
+    )
 
 
 @app.route("/tags")
@@ -176,14 +181,37 @@ def add_tag_to_image(image_id):
         # Sanitize input
         new_tag_name = new_tag_name.strip().replace(" ", "_")
 
+        # Skip empty strings
         if new_tag_name:
-            tag = Tag.query.filter_by(name=new_tag_name).first()
+            tokens = new_tag_name.split(":")
+            if len(tokens) == 0:
+                # No tag name nor category were provided, so skip
+                continue
+            elif len(tokens) == 1:
+                # Only the tag name was provided
+                category_ = ""
+                tag_name = tokens[0]
+            elif len(tokens) == 2:
+                category_, tag_name = tokens
+            elif len(tokens) > 3:
+                # Only use the first 2 tokens as the category
+                # and tag name respectively
+                category_ = tokens[0]
+                tag_name = tokens[1]
 
-            if not tag:
+            # Skip if tag name is empty
+            if tag_name == "": continue
+
+            tag = Tag.query.filter_by(name=tag_name).first()
+
+            if tag is None:
                 # Add new tag to database
-                tag = Tag(name=new_tag_name)
+                if category_== "":
+                    tag = Tag(name=tag_name)    
+                else:
+                    tag = Tag(name=tag_name, category=category_)
                 db.session.add(tag)
-                app.logger.info(f"New <Tag> created: '{new_tag_name}'.")
+                app.logger.info(f"New <Tag> created: '{tag.category}:{tag.name}'.")
 
             if tag not in image.tags:
                 # Add tag to image if not on image already.
@@ -228,6 +256,7 @@ def create_tag():
     if request.method == "POST":
         tag_name = request.form.get("name", type=str)
         tag_description = request.form.get("description", None, type=str)
+        tag_category = request.form["category"] # Should never be None
         
         if (tag_description is None) or (tag_description.strip() == ""):
             tag_description = None 
@@ -241,7 +270,8 @@ def create_tag():
             # referred_tag_id is None or referred_tag_id not in database; create a new tag.
             tag = Tag(
                 name = new_tag_name,
-                description = tag_description
+                description = tag_description,
+                category = tag_category
             )
 
             db.session.add(tag)
@@ -258,17 +288,19 @@ def create_tag():
         "tag_editor.html",
         action_url = url_for("create_tag"),
         tag_name = "",
-        tag_description = ""
+        tag_description = "",
+        tag_category = ""
     )
 
 
 @app.route("/tags/<int:id>/edit", methods=["POST", "GET"])
 def edit_tag(id: int):
-    tag = Tag.query.filter_by(id=id).first_or_404()
+    tag: Tag = Tag.query.filter_by(id=id).first_or_404()
 
     if request.method == "POST":
         tag_name = request.form.get("name", type=str)
         tag_description = request.form.get("description", None, type=str)
+        tag_category = request.form["category"] # Should never be None
         
         if (tag_description is None) or (tag_description.strip() == ""):
             tag_description = None 
@@ -284,6 +316,7 @@ def edit_tag(id: int):
         else:
             tag.name = new_tag_name
             tag.description = tag_description
+            tag.category = TagCategory.of(tag_category)
 
             app.logger.info(f"<Tag> updated: {tag.name}")
         
@@ -295,7 +328,8 @@ def edit_tag(id: int):
         "tag_editor.html",
         action_url = url_for("edit_tag", id=id),
         tag_name = tag.name,
-        tag_description = "" if tag.description is None else tag.description
+        tag_description = "" if tag.description is None else tag.description,
+        tag_category = tag.category
     )
 
 
@@ -355,9 +389,9 @@ def upload_file():
         with db.session.no_autoflush as db_session:
 
             # Create 'video' tag if it does not exist.
-            video_tag = db.session.query(Tag).filter_by(name="metadata:video").first()
+            video_tag = db.session.query(Tag).filter_by(name="video").first()
             if video_tag is None:
-                video_tag = Tag(name="metadata:video")
+                video_tag = Tag(name="video", category="metadata")
 
                 db.session.add(video_tag)
                 db.session.commit()

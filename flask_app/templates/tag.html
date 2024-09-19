@@ -42,6 +42,8 @@
 <div class="content">
     <div style="text-align: center; margin: 10px;">
         <h1 style="margin: auto;">{{ tag.name }} ({{ tag.images|length }})</h1>
+        <span><strong>{{ tag.category.value }}</strong></span>
+        <br />
         <span><a href="{{ url_for('get_tag_info', name=tag.name) }}">more info</a></span>
     </div>
 
