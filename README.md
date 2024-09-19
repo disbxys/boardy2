@@ -36,7 +36,7 @@ pip install python-magic-bin
 
 Make sure to have this installed **AFTER** installing `python-magic`. Otherwise, you can run into the same error.
 
-#### Other OSs
+#### Other Platforms
 Refer to https://github.com/ahupp/python-magic#installation for more information
 
 ## How to Run
@@ -62,10 +62,27 @@ Boardy2 supports most image/video formats. Please refer to [python-magic](#pytho
 ### Python-Magic
 As the app uses python-magic to determine image file formats and mimetypes, any failure to detect an image format will most likely be due to python-magic.
 
-## Migrating to Boardy3
-Currently, Boardy3 does not support video files and may crash your app if you try to run it after migrating yor files.
+## Tagging Images
+Tags are separated into 5 categories:
+- **Copyright:** What series do the characters shown in the image appear in.
+- **Character:** What characters are shown in the image.
+- **Artist:** Who created the image. This should be the person that created the image itself and not the actual creator of the characters (if any) shown in the image.
+- **Metadata:** Any information about the image itself (e.g. ai generated, video, etc...).
+- **General:** Any tags that do not fall under the above categories go here. This is usually where most tags would default to.
 
-Either wait for video support to be added or import the images manually to Boardy3. You can find the database image/video files at `/db` and the db file at `/instance/image_database.db`.
+There are 2 ways of creating tags.
+
+### Quick Adding
+![Creating tags through the image post page](static/images/quick_add_tag.png)
+
+New tags can be created here. The format for creating new tags is `CATEGORY:TAGNAME`. The category can be omitted, but a tag name **MUST** be provided. If a category is not provided, the tag will have the general category by default.
+
+Multiple tags can also be added by separating them with a comma.
+
+### Manual Adding
+![Creating a tag through the new tag page](static/images/new_tag_page.png)
+
+You can create tags one at a time by navigating to the "Tags" page at the top of the page and clicking the "New Tag" button. One downside is that it is a slower method for creating tags and you cannot add the tag to an image at the same time. However, this method allows you to add a description to the tag if you want to add one.
 
 ## Q&A
 Q: Can't you do it this way?\
