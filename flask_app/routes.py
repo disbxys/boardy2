@@ -1,4 +1,3 @@
-from collections import defaultdict
 from datetime import datetime
 import hashlib
 import magic
@@ -14,6 +13,7 @@ from PIL import Image as PILImage
 import werkzeug.datastructures.file_storage as werkzeug_fs
 
 from flask_app import app
+from flask_app.adapters import SortedDefaultDict
 from flask_app.models import TagCategory, db, Image, image_tag, Tag
 
 
@@ -118,9 +118,10 @@ def get_thumbnail(id):
 def get_image_post(id):
     image_stats = get_image_stats(id)
     image: Image = Image.query.filter_by(id=image_stats["id"]).first_or_404()
+    allow_edit = request.args.get("edit", False, type=bool)
 
     # Sort tags based on categories
-    category_tags: dict[str, list[tuple[Tag, int]]] = defaultdict(list)
+    category_tags = SortedDefaultDict(list)
     for tag in image.tags:
         category = tag.category.name
         
@@ -130,11 +131,22 @@ def get_image_post(id):
         # Add pair of Tag and image count
         category_tags[category].append((tag, num_images))
 
-    return render_template(
-        "post.html",
-        image_stats = image_stats,
-        category_tags = category_tags
-    )
+    # Sort each tag in each category by name
+    for category, tags in category_tags.items():
+        category_tags[category] = sorted(tags, key=lambda x: x[0].name)
+
+    if allow_edit:
+        return render_template(
+            "post_editor.html",
+            image_stats = image_stats,
+            category_tags = category_tags.sorted_items()
+        )
+    else:
+        return render_template(
+            "post.html",
+            image_stats = image_stats,
+            category_tags = category_tags.sorted_items()
+        )
 
 
 @app.route("/tags")

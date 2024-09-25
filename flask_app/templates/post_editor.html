@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %} Post Editor: {{ image_stats.id }} {% endblock %}
+
+{% block styles %}
+<style>
+    .tag-category-title {
+        font-weight: bold;
+    }
+    .tag-list {
+        list-style: disc;
+        margin: 0;
+    }
+    .tags-container {
+        margin: 10px;
+    }
+    .tag-category-title {
+        margin-bottom: 10px;
+    }
+    .tag-category {
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div style="text-align: center; margin: 10px;">
+        <h1 style="margin: auto;">Post Editor</h1>
+    </div>
+
+    <div class="image-container">
+        {% if image_stats.media_type == 'video' %}
+            <video style="max-width: 600px;" controls>
+                <source
+                    poster="{{ url_for('get_thumbnail', id=image_stats.id) }}"
+                    src="{{ url_for('get_image', id=image_stats.id) }}"
+                    preload="metadata"
+                >
+            </video>
+        {% else %}
+            <img
+                src="{{ url_for('get_image', id=image_stats.id) }}"
+                style="max-width: 600px;"
+                loading="lazy"
+            >
+        {% endif %}
+    </div>
+    <div class="tags-container">
+
+        {% for category, tags in category_tags %}
+            <div class="tag-category">
+                <span class="tag-category-title">{{ category | title }}</span>
+
+                <ul id="tag-list" class="tag-list">
+                    {% for tag in tags %}
+                        <li class="tag-list-item no-list">
+                            <input type="checkbox" value="{{ tag[0].id }}"><span>
+                                <a href="{{ url_for('get_images_by_tag', name=tag[0].name) }}">
+                                    {{ tag[0].name }}
+                                </a>
+                                ({{ tag[1] }})
+                            </span></input>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+        {% endfor %}
+
+        <form action="{{ url_for('add_tag_to_image', image_id=image_stats.id) }}" method="post">
+            <input
+                type="text"
+                id="new_tag" name="new_tag"
+                required placeholder='Separate multiple tags with a comma'
+                size="30"
+            >
+            <button type="submit">Add Tag(s)</button>
+        </form>
+        <div class="delete-button-container" id="delete-button-container" style="display: none;">
+            <button class="delete-button" onclick="confirmDeleteTags()">Remove Tag(s)</button>
+        </div>
+        
+    </div>
+    <br/>
+    <div class="details">
+        <span><strong>ID:</strong> {{ image_stats.id }}</span><br/>
+        <span><strong>Date:</strong> {{ image_stats.date }}</span><br/>
+        <span><strong>File Type:</strong> {{ image_stats.mimetype }}</span><br/>
+        <span>
+            <a
+                href="{{ url_for('get_image', id=image_stats.id) }}"
+                target="_blank"
+                rel="noreferrer noopener"
+            >
+                <button>View original</button>
+            </a>
+        </span>
+    </div>
+    <div class="delete-button-container" id="delete-button-container">
+        <button class="delete-button" onclick="confirmDeletePost()">Delete</button>
+    </div>
+</div>
+<script>
+    const buttonContainer = document.getElementById("delete-button-container");
+    const tagsList = document.getElementById("tag-list");
+
+    function confirmDeletePost() {
+        const confirmation = confirm("Are you sure you want to delete the image?");
+
+        if (confirmation) {
+            window.location.href = `{{ url_for("delete_image", id=image_stats.id) }}`;
+
+            window.alert("Image deleted successfully!");
+        }
+    }
+
+    function confirmDeleteTags() {
+        var checkboxes = document.querySelectorAll("#tag-list input[type='checkbox']");
+        var selectedOptions = [];
+
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                selectedOptions.push(checkbox.value);
+            }
+        });
+
+        if (selectedOptions.length > 0) {
+
+            // Convert selected options to parseable string
+            selectedOptions = selectedOptions.join(",");
+
+            var confirmation = confirm("Delete the tag as well?");
+            var deleteUrl;
+            if (confirmation) {
+                deleteUrl = "{{ url_for('remove_tags', id=image_stats.id, delete=true) | safe }}";
+                deleteUrl = deleteUrl + `&tags=${selectedOptions}`;
+                window.location.href = deleteUrl;
+                console.log("Tags deleted: " + selectedOptions.join(", "));
+            } else {
+                deleteUrl = "{{ url_for('remove_tags', id=image_stats.id, delete=false) | safe }}";
+                deleteUrl = deleteUrl + `&tags=${selectedOptions}`;
+                window.location.href = deleteUrl;
+                console.log("Tags removed: " + selectedOptions.join(", "));
+            }
+        } else {
+            alert("No options selected");
+        }
+    }
+
+    // Check if at least one checkbox is checked
+    function updateButtonVisibility() {
+        var checkboxes = document.querySelectorAll("#tag-list input[type='checkbox']");
+        var isChecked = Array.from(checkboxes).some((checkbox) => {
+            return checkbox.checked;
+        });
+
+        buttonContainer.style.display = isChecked ? "block": "none";
+    }
+
+    // Add event listener to checkboxes
+    tagsList.addEventListener("change", updateButtonVisibility);
+</script>
+
+<script type="text/javascript">
+    $(function() {
+        $("#new_tag").autocomplete({
+            source:function(request, response) {
+                var inputParts = request.term.split(" ");
+                var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
+
+                // Check if the last word as the query to the endpoint
+                if (query.length >= 2) {
+                    $.getJSON("{{ url_for('tag_suggestions') }}", {
+                        q: query
+                    }, function(data) {
+                        response(data.suggestions);
+                    });
+                } else {
+                    // If  minLength is not met, clear the suggestions
+                    response([]);
+                }
+            },
+            focus: function(event, ui) {
+                // Prevent the suggestion from being inserted automatically
+                event.preventDefault();
+            },
+            select: function(event, ui) {
+                // This should prevent default behavior to avoid double insertion
+                event.preventDefault();
+
+                var inputParts = $(this).val().split(" ");
+
+                inputParts[inputParts.length - 1] = ui.item.value.split(" ")[0];
+                // inputParts.pop();
+
+                $(this).val(inputParts.join(" ") + ", ");
+                // return false;
+            }
+        });
+    })
+</script>
+
+{% endblock %}
