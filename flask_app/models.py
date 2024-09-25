@@ -56,7 +56,6 @@ class Tag(db.Model):
             self.category = TagCategory.of(category)
         else:
             self.category = category
-        print(self.category)
 
 
     def __repr__(self) -> str:

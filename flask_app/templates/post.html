@@ -2,6 +2,27 @@
 
 {% block title %} Post: {{ image_stats.id }} {% endblock %}
 
+{% block styles %}
+<style>
+    .tag-category-title {
+        font-weight: bold;
+    }
+    .tag-list {
+        list-style: disc;
+        margin: 0;
+    }
+    .tags-container {
+        margin: 10px;
+    }
+    .tag-category-title {
+        margin-bottom: 10px;
+    }
+    .tag-category {
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="content">
     <h1>Post</h1>
@@ -24,18 +45,26 @@
         {% endif %}
     </div>
     <div class="tags-container">
-        <strong>Tags:</strong>
-        <ul id="tag-list" class="tag-list" style="list-style: disc; margin: 0;">
-            {% for tag in tags %}
-                <li>
-                    <input type="checkbox" value="{{ tag[0].id }}"><span>
-                        <a href="{{ url_for('get_images_by_tag', name=tag[0].name) }}">
-                            {{ tag[0].name }}
-                        </a>
-                        ({{ tag[1] }})
-                    </span></input>
-                </li>
+        <ul id="tag-list" class="tag-list">
+
+            {% for category, tags in category_tags.items() %}
+                <div class="tag-category">
+                    <span class="tag-category-title">{{ category | title }}</span>
+
+                    {% for tag in tags %}
+                        <li class="tag-list-item no-list">
+                            <input type="checkbox" value="{{ tag[0].id }}"><span>
+                                <a href="{{ url_for('get_images_by_tag', name=tag[0].name) }}">
+                                    {{ tag[0].name }}
+                                </a>
+                                ({{ tag[1] }})
+                            </span></input>
+                        </li>
+                    {% endfor %}
+                </div>
+
             {% endfor %}
+
             <form action="{{ url_for('add_tag_to_image', image_id=image_stats.id) }}" method="post">
                 <input
                     type="text"

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 import hashlib
 import magic
@@ -116,23 +117,23 @@ def get_thumbnail(id):
 @app.route("/posts/<int:id>")
 def get_image_post(id):
     image_stats = get_image_stats(id)
-    image = Image.query.filter_by(id=image_stats["id"]).first()
+    image: Image = Image.query.filter_by(id=image_stats["id"]).first_or_404()
 
-    if image:
-        tags_for_image = image.tags
+    # Sort tags based on categories
+    category_tags: dict[str, list[tuple[Tag, int]]] = defaultdict(list)
+    for tag in image.tags:
+        category = tag.category.name
+        
+        # Get the number of images associated with each tag
+        num_images = len(tag.images)
 
-        tag_info_list = []
-
-        for tag in tags_for_image:
-            # Get the number of images associated with each tag
-            num_images = len(tag.images)
-
-            tag_info_list.append((tag, num_images))
+        # Add pair of Tag and image count
+        category_tags[category].append((tag, num_images))
 
     return render_template(
         "post.html",
         image_stats = image_stats,
-        tags = tag_info_list
+        category_tags = category_tags
     )
 
 
@@ -211,7 +212,7 @@ def add_tag_to_image(image_id):
                 else:
                     tag = Tag(name=tag_name, category=category_)
                 db.session.add(tag)
-                app.logger.info(f"New <Tag> created: '{tag.category}:{tag.name}'.")
+                app.logger.info(f"New <Tag> created: '{tag.category.name}:{tag.name}'.")
 
             if tag not in image.tags:
                 # Add tag to image if not on image already.
@@ -275,7 +276,7 @@ def create_tag():
             )
 
             db.session.add(tag)
-            app.logger.info(f"New <Tag> created: {tag.name}'")
+            app.logger.info(f"New <Tag> created: '{tag.category.name}:{tag.name}'.")
 
         else:
             flash("A tag with the name <{}> already exists.".format(tag.name))
