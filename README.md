@@ -75,7 +75,7 @@ There are 2 ways of creating tags.
 ### Quick Adding
 ![Creating tags through the image post page](static/images/quick_add_tag.png)
 
-New tags can be created here. The format for creating new tags is `CATEGORY:TAGNAME`. The category can be omitted, but a tag name **MUST** be provided. If a category is not provided, the tag will have the general category by default.
+New tags can be created here. The format for creating new tags is `CATEGORY:TAGNAME`. The category can be omitted, but a tag name **MUST** be provided. If a category is not provided, the tag will have the `general` category by default.
 
 Multiple tags can also be added by separating them with a comma.
 
@@ -84,9 +84,17 @@ Multiple tags can also be added by separating them with a comma.
 
 You can create tags one at a time by navigating to the "Tags" page at the top of the page and clicking the "New Tag" button. One downside is that it is a slower method for creating tags and you cannot add the tag to an image at the same time. However, this method allows you to add a description to the tag if you want to add one.
 
+## Merging Tags
+![Merging tags to fix a spelling mistake](static/images/confirm_merge_tags.png)
+
+This feature was added to help correct accidentally adding a misspelled tag to images when the correct spelling of that tag already exists. To start, navigate to the tag edit page of the misspelled tag. After correcting the misspelling, clicking save with then prompt you to confirm that you are fine with merging the formerly mispelled tag with the correct tag.
+
 ## Q&A
 Q: Can't you do it this way?\
-A: I probably haven't done it that way either because it would take too much time to do or it would feel too wierd to implment.
+A: I probably haven't done it that way either because it would take too much time to do or it would feel too wierd to implement.
+
+Q: Why haven't you added this feature yet?\
+A: Create a feature request in the [issues page](https://github.com/disbxys/boardy2/issues). I may get to it if I can add it.
 
 Q: Thank you for creating this app.\
 A: Not a question but thank you

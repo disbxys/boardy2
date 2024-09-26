@@ -411,6 +411,16 @@ def upload_file():
 
                 app.logger.info("New <Tag> saved in database: metadata:video.")
 
+            # Create 'tagme' tag if it does not exist.
+            tagme_tag = db.session.query(Tag).filter_by(name="tagme?").first()
+            if tagme_tag is None:
+                tagme_tag = Tag(name="tagme?", category="metadata")
+
+                db.session.add(tagme_tag)
+                db.session.commit()
+
+                app.logger.info("New <Tag> saved in database: metadata:tagme?.")
+
             saved_files = list()    # list of images saved to file
             image_records = list()  # list of <Image> records to be saved to database
             try:
@@ -459,10 +469,11 @@ def upload_file():
 
                     # Generate a thumbnail
                     create_thumbnail(save_path, video = is_video)
-                    app.logger.info(f"Thumbnail generated for database image: {new_filename}")
+                    app.logger.debug(f"Thumbnail generated for database image: {new_filename}")
 
                     ####
                     image = Image(filename=new_filename, is_video=is_video)
+                    image.tags.append(tagme_tag)
                     if is_video:
                         image.tags.append(video_tag)
 
