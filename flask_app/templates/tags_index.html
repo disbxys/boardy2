@@ -36,11 +36,15 @@
 
 {% block content %}
 <div class="content">
-    {% for message in get_flashed_messages() %}
-        <div class="alert">
-            {{ message }}
-        </div>
-    {% endfor %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li class="no-list">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
 
     <div style="margin-top: 10px;">
         <button type="button" onclick="location.href='{{ url_for('create_tag') }}'">

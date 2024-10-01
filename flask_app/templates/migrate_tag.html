@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Merge Tags{% endblock %}
+
+{% block content %}
+<div class="content">
+    <h1>Confirm Merge Tags</h1>
+    <p>
+        Do you want to merge "{{ tag1.name }}" to "{{ tag2.name }}"?
+        <br />
+        <br />
+        <strong><i>DISCLAIMER: This will tag all images tagged with "{{ tag1.name }}" with the tag "{{ tag2.name }}" and then permanently delete "{{ tag1.name }}".</i></strong>
+    </p>
+
+    <form method="POST" enctype=multipart/form-data>
+        <input type="hidden" name="tag1" value="{{ tag1.id }}" />
+        <input type="hidden" name="tag2" value="{{ tag2.id }}" />
+        <input type="submit" value="Confirm" />
+    </form>
+
+    <form method="GET" action="{{ url_for('get_images_by_tag', name=tag2.name) }}">
+        <input type="submit" value="Cancel" />
+    </form>
+</div>
+
+{% endblock %}

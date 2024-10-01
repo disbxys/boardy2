@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}New Tag{% endblock %}
+{% block title %}Tag Editor{% endblock %}
 
 {% block content %}
 <div class="content">
@@ -33,6 +33,17 @@
         <input type=submit value="Save" />
         <input type="button" value="Cancel" onclick="location.href='{{ url_for('tags_index') }}'" />
     </form>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li class="no-list">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    
 </div>
 
 {% endblock %}

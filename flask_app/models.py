@@ -78,6 +78,10 @@ class Image(db.Model):
             if tag in self.tags:
                 self.tags.remove(tag)
 
+    
+    def remove_tag(self, tag_to_remove: Tag) -> None:
+        self.tags.remove(tag_to_remove)
+
 
 # Call configure on the registry
 db.configure_mappers()

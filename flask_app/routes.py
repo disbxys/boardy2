@@ -322,10 +322,10 @@ def edit_tag(id: int):
 
         new_tag_name = tag_name.strip().replace(" ", "_")
 
-        t_ = db.session.query(Tag).filter_by(name=new_tag_name).first()
-        if (t_) and (t_.id != tag.id):
+        existing_tag = db.session.query(Tag).filter_by(name=new_tag_name).first()
+        if (existing_tag is not None) and (tag.id != existing_tag.id):
             # Tag w/ same name found and does not share the same tag id.
-            flash("A tag with the name <{}> already exists.".format(t_.name))
+            return redirect(url_for("merge_tags", tag1=tag.id, tag2=existing_tag.id))
         else:
             tag.name = new_tag_name
             tag.description = tag_description
@@ -344,6 +344,45 @@ def edit_tag(id: int):
         tag_description = "" if tag.description is None else tag.description,
         tag_category = tag.category
     )
+
+
+@app.route("/tags/merge", methods=["POST", "GET"])
+def merge_tags():
+    """
+    Add tag2 to all images tagged with tag1. Then, remove tag1 from
+    all of those images.
+    """
+
+    if request.method == "POST":
+        tag1_id: int = request.form.get("tag1", type=int)
+        tag2_id: int = request.form.get("tag2", type=int)
+
+        tag1: Tag = Tag.query.filter_by(id=tag1_id).first_or_404()
+        tag2: Tag = Tag.query.filter_by(id=tag2_id).first_or_404()
+
+        if (tag1.id != tag2.id):
+            # Migrate images tagged with tag1 to tag2
+            for image in tag1.images:
+                # Remove tag1 from image
+                image.remove_tag(tag1)
+                # Add tag2 to image if not already added
+                if tag2 not in image.tags:
+                    image.tags.append(tag2)
+            
+            # Delete tag1
+            db.session.delete(tag1)
+
+            db.session.commit()
+
+        return redirect(url_for("get_images_by_tag", name=tag2.name))
+
+    tag1_id: int = request.args.get("tag1", type=int)
+    tag2_id: int = request.args.get("tag2", type=int)
+
+    tag1: Tag = Tag.query.filter_by(id=tag1_id).first_or_404()
+    tag2: Tag = Tag.query.filter_by(id=tag2_id).first_or_404()
+
+    return render_template("migrate_tag.html", tag1=tag1, tag2=tag2)
 
 
 @app.route("/tags/delete", methods=["DELETE", "GET"])
