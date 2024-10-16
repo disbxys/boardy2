@@ -204,9 +204,7 @@ def add_tag_to_image(image_id):
                 # Only the tag name was provided
                 category_ = ""
                 tag_name = tokens[0]
-            elif len(tokens) == 2:
-                category_, tag_name = tokens
-            elif len(tokens) > 3:
+            else:
                 # Only use the first 2 tokens as the category
                 # and tag name respectively
                 category_ = tokens[0]

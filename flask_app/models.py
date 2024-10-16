@@ -25,7 +25,7 @@ class TagCategory(Enum):
 
         # I would rather throw an exception here but I figured that
         # it would be better to just default to general.
-        raise cls.GENERAL
+        return cls.GENERAL
 
 
 # Association Table for many-to-many relationship between Image and Tag
@@ -52,6 +52,7 @@ class Tag(db.Model):
         self.name = name
         self.description = description
 
+        assert isinstance(category, (str, TagCategory))
         if isinstance(category, str):
             self.category = TagCategory.of(category)
         else:
