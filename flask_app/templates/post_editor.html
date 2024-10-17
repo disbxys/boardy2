@@ -165,8 +165,8 @@
 <script type="text/javascript">
     $(function() {
         $("#new_tag").autocomplete({
-            source:function(request, response) {
-                var inputParts = request.term.split(" ");
+            source: function(request, response) {
+                var inputParts = request.term.split(", ");
                 var query = inputParts.length > 0 ? inputParts[inputParts.length-1] : "";
 
                 // Check if the last word as the query to the endpoint

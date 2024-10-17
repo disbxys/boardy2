@@ -195,20 +195,25 @@ def add_tag_to_image(image_id):
         new_tag_name = new_tag_name.strip().replace(" ", "_")
 
         # Skip empty strings
-        if new_tag_name:
-            tokens = new_tag_name.split(":")
-            if len(tokens) == 0:
-                # No tag name nor category were provided, so skip
-                continue
-            elif len(tokens) == 1:
-                # Only the tag name was provided
-                category_ = ""
-                tag_name = tokens[0]
+        if new_tag_name != "":
+            if ":" in new_tag_name:
+                tokens = new_tag_name.split(":")
+                if len(tokens) == 0:
+                    # No tag name nor category were provided, so skip
+                    continue
+                elif len(tokens) == 1:
+                    # Only the tag name was provided
+                    category_ = ""
+                    tag_name = tokens[0]
+                else:
+                    # Only use the first 2 tokens as the category
+                    # and tag name respectively
+                    category_ = tokens[0]
+                    tag_name = tokens[1]
             else:
-                # Only use the first 2 tokens as the category
-                # and tag name respectively
-                category_ = tokens[0]
-                tag_name = tokens[1]
+                # No colons found. Assume only tag name was given
+                category_ = ""
+                tag_name = new_tag_name
 
             # Skip if tag name is empty
             if tag_name == "": continue
