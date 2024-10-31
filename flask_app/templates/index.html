@@ -8,36 +8,27 @@
 <script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
 <script src="//code.jquery.com/ui/1.10.2/jquery-ui.js" ></script>
 
-<script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", function() {
-
-        const lazyLoadImages = document.querySelectorAll(".lazy-load");
-
-        if ("IntersectionObserver" in window) {
-            let imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.classList.remove("lazy-load");
-                        observer.unobserve(img);
-                    }
-                });
-            });
-
-            lazyLoadImages.forEach((img) => {
-                imageObserver.observe(img);
-            });
-        } else {
-            // Fallback for browsers that do not support IntersectionObserver
-            lazyLoadImages.forEach((img) => {
-                img.src = img.dataset.src;
-                img.classList.remove("lazy-load");
-            });
-        }
-    });
-
-</script>
+<style>
+    .image-gallery-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 200px;
+        height: 200px;
+    }
+    .image-thumbnail {
+        max-width: 200px;
+        max-height: 200px;
+    }
+    .video-thumbnail {
+        max-width: 200px;
+        max-height: 200px;
+        padding: 5px;
+        border-style: solid;
+        border-color: blue;
+        border-width: thick;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -80,21 +71,17 @@
                     <tr class="images-row">
                         {% for image in image_batch %}
                             <td class="image-cell">
-                                <div class="image-post" style="display: flex; align-items: center; justify-content: center;">
+                                <div class="image-gallery-item">
                                     <a href="{{ url_for('get_image_post', id=image.id) }}">
                                         {% if image.is_video %}
                                         <img
-                                            src="/static/images/placeholder.jpg"
-                                            data-src="{{ url_for('get_thumbnail', id=image.id) }}"
-                                            style="max-width: 200px; max-height: 200px; padding: 5px; border-style: solid; border-color: blue; border-width: thick;"
-                                            loading="lazy" class="lazy-load"
+                                            src="{{ url_for('get_thumbnail', id=image.id) }}"
+                                            loading="lazy" class="video-thumbnail lazy-load"
                                         >
                                         {% else %}
                                         <img
-                                            src="/static/images/placeholder.jpg"
-                                            data-src="{{ url_for('get_thumbnail', id=image.id) }}"
-                                            style="max-width: 200px; max-height: 200px; padding: 5px;"
-                                            loading="lazy" class="lazy-load"
+                                            src="{{ url_for('get_thumbnail', id=image.id) }}"
+                                            loading="lazy" class="image-thumbnail lazy-load"
                                         >
                                         {% endif %}
                                     </a>
