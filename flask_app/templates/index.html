@@ -8,27 +8,6 @@
 <script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
 <script src="//code.jquery.com/ui/1.10.2/jquery-ui.js" ></script>
 
-<style>
-    .image-gallery-item {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 200px;
-        height: 200px;
-    }
-    .image-thumbnail {
-        max-width: 200px;
-        max-height: 200px;
-    }
-    .video-thumbnail {
-        max-width: 200px;
-        max-height: 200px;
-        padding: 5px;
-        border-style: solid;
-        border-color: blue;
-        border-width: thick;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -97,7 +76,7 @@
     {% if images.pages > 0 %}
         <div class="pagination" style="text-align: center;">
             {% if images.has_prev %}
-                <a href="{{ url_for('index', tags=keyword, page=images.prev_num) }}">Previous</a>
+                <a class="page-letter" href="{{ url_for('index', tags=keyword, page=images.prev_num) }}">Previous</a>
             {% endif %}
             
             {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
@@ -105,7 +84,7 @@
                     {% if current_page == page_num %}
                         {{ page_num }}
                     {% else %}
-                        <a href="{{ url_for('index', tags=keyword, page=page_num) }}">{{ page_num }}</a>
+                        <a class="page-letter" href="{{ url_for('index', tags=keyword, page=page_num) }}">{{ page_num }}</a>
                     {% endif %}
                 {% else %}
                     ...
@@ -113,7 +92,7 @@
             {% endfor %}
 
             {% if images.has_next %}
-                <a href="{{ url_for('index', tags=keyword, page=images.next_num) }}">Next</a>
+                <a class="page-letter" href="{{ url_for('index', tags=keyword, page=images.next_num) }}">Next</a>
             {% endif %}
         </div>
     {% endif %}

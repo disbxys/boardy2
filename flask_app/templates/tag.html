@@ -50,7 +50,7 @@
     {% if images.pages > 0 %}
     <div class="pagination" style="text-align: center;">
         {% if images.has_prev %}
-        <a href="{{ url_for('get_images_by_tag', name=tag.name, page=images.prev_num) }}">Previous</a>
+            <a href="{{ url_for('get_images_by_tag', name=tag.name, page=images.prev_num) }}">Previous</a>
         {% endif %}
         
         {% for page_num in images.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
@@ -61,12 +61,12 @@
                     <a href="{{ url_for('get_images_by_tag', name=tag.name, page=page_num) }}">{{ page_num }}</a>
                 {% endif %}
             {% else %}
-            ...
+                ...
             {% endif %}
         {% endfor %}
 
         {% if images.has_next %}
-        <a href="{{ url_for('get_images_by_tag', name=tag.name, page=images.next_num) }}">Next</a>
+            <a href="{{ url_for('get_images_by_tag', name=tag.name, page=images.next_num) }}">Next</a>
         {% endif %}
     </div>
     {% endif %}
@@ -78,13 +78,20 @@
                     <tr class="images-row">
                         {% for image in image_batch %}
                             <td class="image-cell">
-                                <div class="image-post" style="display: flex; align-items: center; justify-content: center;">
+                                <div class="image-gallery-item" style="display: flex; align-items: center; justify-content: center;">
                                     <a href="{{ url_for('get_image_post', id=image.id) }}">
+                                        {% if image.is_video %}
                                         <img
                                             src="{{ url_for('get_thumbnail', id=image.id) }}"
-                                            style="max-width: 200px; max-height: 200px; padding: 5px;"
-                                            loading="lazy"
+                                            loading="lazy" class="video-thumbnail lazy-load"
                                         >
+                                        {% else %}
+                                        <img
+                                            src="{{ url_for('get_thumbnail', id=image.id) }}"
+                                            loading="lazy" class="image-thumbnail lazy-load"
+                                        >
+                                        {% endif %}
+                                    </a>
                                     </a>
                                 </div>
                             </td>
