@@ -9,7 +9,7 @@ Flask-SQLAlchemy==3.1.1
 greenlet==3.1.1
 idna==3.10
 itsdangerous==2.2.0
-Jinja2==3.1.5
+Jinja2==3.1.6
 MarkupSafe==3.0.2
 numpy==2.2.2
 opencv-python==4.11.0.86
