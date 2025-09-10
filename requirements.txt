@@ -21,7 +21,7 @@ pyinstaller-hooks-contrib==2025.0
 python-magic==0.4.27
 python-magic-bin==0.4.14
 pywin32-ctypes==0.2.3
-requests==2.32.3
+requests==2.32.4
 SQLAlchemy==2.0.37
 typing_extensions==4.12.2
 urllib3==2.5.0
